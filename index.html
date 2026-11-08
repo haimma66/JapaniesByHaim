@@ -1,0 +1,2274 @@
+<title>יפנית לדרך</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Rubik:wght@500;700&family=Zen+Maru+Gothic:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-width column. Sticky header holds a boarding-pass strip and the tab bar; each tab is a stack of panels. */
+:root {
+  --paper: #F2F4F7; --surface: #FFFFFF; --ink: #17213A; --muted: #5A6377; --line: #D9DEE7;
+  --ai: #2B4A8A; --ai-soft: #E2E8F4; --on-ai: #FFFFFF;
+  --hl: #FFE27A; --hl-ink: #17213A;
+  --ok: #2E7A4E; --ok-soft: #E1F1E7; --bad: #B23E2C; --bad-soft: #F8E4E0; --shu: #C4473A;
+  --display: "Rubik", "Assistant", system-ui, sans-serif;
+  --body: "Assistant", system-ui, sans-serif;
+  --ja: "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0E1320; --surface: #172034; --ink: #E7EBF3; --muted: #9AA3B6; --line: #29334A;
+    --ai: #8EADF0; --ai-soft: #22314F; --on-ai: #0E1320;
+    --hl: #E8C653; --hl-ink: #14192A;
+    --ok: #6CC892; --ok-soft: #1B3428; --bad: #F08A78; --bad-soft: #3A2220; --shu: #F07A6A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0E1320; --surface: #172034; --ink: #E7EBF3; --muted: #9AA3B6; --line: #29334A;
+  --ai: #8EADF0; --ai-soft: #22314F; --on-ai: #0E1320;
+  --hl: #E8C653; --hl-ink: #14192A;
+  --ok: #6CC892; --ok-soft: #1B3428; --bad: #F08A78; --bad-soft: #3A2220; --shu: #F07A6A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font: 400 1rem/1.55 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--ai); outline-offset: 2px; }
+.app { max-width: 500px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 40px; display: flex; flex-direction: column; gap: 14px; }
+
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-block: 12px 8px; display: flex; flex-direction: column; gap: 10px; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+h1 { font: 700 1.45rem/1.1 var(--display); margin: 0; letter-spacing: -.01em; }
+h1 .ja { font-family: var(--ja); color: var(--ai); font-size: .8em; margin-inline-start: 6px; }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 6px 12px; font-weight: 600; }
+nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 4px; }
+nav button { border: 0; background: none; border-radius: 9px; padding: 8px 4px; font-weight: 600; color: var(--muted); }
+nav button[aria-selected="true"] { background: var(--ai); color: var(--on-ai); }
+
+h2 { font: 700 1.1rem/1.3 var(--display); margin: 0; text-wrap: balance; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.muted { color: var(--muted); }
+.small { font-size: .88rem; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 14px; font-weight: 600; }
+.btn.primary { background: var(--ai); border-color: var(--ai); color: var(--on-ai); }
+.btn.ok { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.btn.soft { background: var(--ai-soft); border-color: transparent; color: var(--ai); }
+.btn:disabled { opacity: .5; cursor: default; }
+.tag { display: inline-block; font-size: .75rem; font-weight: 700; letter-spacing: .04em; padding: 2px 8px; border-radius: 99px; background: var(--ai-soft); color: var(--ai); }
+.tag.warn { background: var(--bad-soft); color: var(--bad); }
+.tag.good { background: var(--ok-soft); color: var(--ok); }
+
+/* boarding pass strip */
+.pass { display: grid; grid-template-columns: 1fr auto; gap: 0; border-radius: var(--r); overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.pass .main { padding: 14px 16px; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.pass .route { font: 700 1.5rem/1 var(--display); letter-spacing: .04em; direction: ltr; text-align: right; }
+.pass .route span { color: var(--muted); font-weight: 500; margin: 0 6px; }
+.pass .stub { border-inline-start: 2px dashed var(--line); padding: 14px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 96px; background: var(--ai-soft); }
+.pass .stub b { font: 700 1.9rem/1 var(--display); color: var(--ai); font-variant-numeric: tabular-nums; }
+.pass input { border: 1px solid var(--line); background: var(--paper); border-radius: 8px; padding: 2px 6px; font-size: .88rem; }
+.goal { display: flex; flex-direction: column; gap: 6px; }
+.bar { height: 8px; border-radius: 99px; background: var(--ai-soft); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--ai); border-radius: 99px; transition: width .3s; }
+.ready { display: grid; gap: 10px; }
+.ready button { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; text-align: start; border: 0; background: none; padding: 0; }
+.ready button .bar { grid-column: 1 / -1; }
+.ready b { font-variant-numeric: tabular-nums; }
+
+/* scenario chips */
+.chips { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.chip { flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 14px; font-weight: 600; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip.add { border-style: dashed; color: var(--ai); }
+
+/* captions */
+.cap { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.cap .ja { font: 500 1.45rem/1.9 var(--ja); direction: ltr; text-align: left; }
+.cap .ro { direction: ltr; text-align: left; color: var(--muted); font-size: 1rem; }
+.cap .hetr { color: var(--muted); font-size: 1rem; }
+.cap .tr { font-weight: 600; border-top: 1px solid var(--line); padding-top: 6px; }
+.cap .off { color: var(--muted); font-style: italic; }
+.tk { border-radius: 6px; padding: 0 2px; transition: background .12s; }
+button.tk { border: 0; background: none; font: inherit; color: inherit; padding: 0 2px; }
+button.tk:hover { background: var(--ai-soft); }
+.tk.on { background: var(--hl); color: var(--hl-ink); }
+.ro .tk, .hetr .tk { margin-inline-end: .35em; }
+rt { font-size: .45em; color: var(--muted); }
+.tk.on rt { color: var(--hl-ink); }
+
+/* conversation */
+.stage { display: grid; grid-template-columns: 112px 1fr; gap: 14px; align-items: start; }
+.stage.noav { grid-template-columns: 1fr; }
+.av { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.av svg { width: 112px; height: auto; max-width: 100%; }
+.av .who { font-weight: 700; font-size: .9rem; }
+.av .role { font-size: .78rem; color: var(--muted); line-height: 1.3; }
+.mouth { transform-box: fill-box; transform-origin: center; }
+.speaking .mouth { animation: talk .18s ease-in-out infinite alternate; }
+@keyframes talk { from { transform: scaleY(.35); } to { transform: scaleY(1.7); } }
+.eyes { transform-box: fill-box; transform-origin: center; animation: blink 5s infinite; }
+@keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+.bubble { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; border-start-start-radius: 4px; padding: 12px 14px; min-width: 0; }
+.he-bubble { background: var(--ai-soft); color: var(--ink); border-radius: 14px; padding: 10px 14px; font-weight: 600; }
+.he-bubble.bad { background: var(--bad-soft); }
+.he-bubble.good { background: var(--ok-soft); }
+.seg { display: inline-grid; grid-template-columns: repeat(3, auto); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); padding: 6px 12px; font-weight: 600; font-size: .88rem; }
+.seg button + button { border-inline-start: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.helps { display: flex; gap: 6px; flex-wrap: wrap; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt { text-align: start; border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; display: block; width: 100%; }
+.opt:hover { border-color: var(--ai); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.opt .cap .ja { font-size: 1.15rem; line-height: 1.8; }
+.ask { display: flex; gap: 8px; }
+.ask input { flex: 1; min-width: 0; border: 1px solid var(--line); background: var(--paper); border-radius: 10px; padding: 8px 12px; }
+.log { display: flex; flex-direction: column; gap: 6px; }
+.log .l { font-size: .92rem; padding: 6px 10px; border-radius: 10px; background: var(--paper); }
+.log .l.me { background: var(--ai-soft); margin-inline-start: 24px; }
+.log .l .j { font-family: var(--ja); direction: ltr; text-align: left; }
+.done { display: flex; gap: 14px; align-items: center; }
+.stamp { flex: none; width: 64px; height: 64px; border: 3px solid var(--shu); color: var(--shu); border-radius: 50%; display: grid; place-items: center; font: 700 1.6rem/1 var(--ja); transform: rotate(-12deg); }
+.tip { border-inline-start: 3px solid var(--shu); padding-inline-start: 10px; }
+
+/* flashcards */
+.card { border: 1px solid var(--line); border-radius: var(--r); background: var(--paper); padding: 22px 16px; min-height: 210px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; text-align: center; width: 100%; }
+.card .big { font: 700 2.4rem/1.6 var(--ja); }
+.card .big rt { font-size: .38em; }
+.card .meaning { font: 700 1.3rem/1.3 var(--display); color: var(--ai); }
+.counter { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.twin { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.twin .btn { padding: 12px; }
+.btn.no { background: var(--bad-soft); border-color: transparent; color: var(--bad); }
+
+/* quiz + lists */
+.q4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.q4 button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px; font-weight: 600; }
+.q4 button.right { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.q4 button.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+.filters { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.filters input, .filters select { border: 1px solid var(--line); background: var(--paper); border-radius: 10px; padding: 8px 10px; min-width: 0; width: 100%; }
+.filters input { grid-column: 1 / -1; }
+.wl { display: flex; flex-direction: column; }
+.wl .w { display: grid; grid-template-columns: auto 1fr auto; gap: 2px 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.wl .w:last-child { border-bottom: 0; }
+.wl .w .j { font: 500 1.25rem/1.5 var(--ja); grid-row: span 2; min-width: 3.5em; direction: ltr; }
+.wl .w .m { font-weight: 700; }
+.wl .w .r { color: var(--muted); font-size: .85rem; grid-column: 2; }
+.wl .w .act { grid-row: 1 / span 2; grid-column: 3; display: flex; gap: 6px; align-items: center; }
+.play { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; width: 34px; height: 34px; display: grid; place-items: center; padding: 0; }
+.play svg { width: 14px; height: 14px; fill: currentColor; }
+
+/* sheets */
+.scrim { position: fixed; inset: 0; background: rgb(10 14 25 / .45); z-index: 20; display: flex; align-items: flex-end; justify-content: center; }
+.sheet { background: var(--surface); width: 100%; max-width: 500px; border-radius: 18px 18px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(18px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 14px; max-height: 88vh; overflow-y: auto; }
+.sheet .head { display: flex; justify-content: space-between; align-items: center; }
+.sw { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 6px 0; }
+.sw input { width: 20px; height: 20px; accent-color: var(--ai); }
+.chars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.chars button { border: 1.5px solid var(--line); background: var(--paper); border-radius: 12px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: .85rem; font-weight: 600; }
+.chars button[aria-pressed="true"] { border-color: var(--ai); background: var(--ai-soft); }
+.chars svg { width: 64px; height: auto; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field input { border: 1px solid var(--line); background: var(--paper); border-radius: 10px; padding: 10px 12px; }
+.note { font-size: .85rem; color: var(--muted); }
+.wordsheet .big { font: 700 2.2rem/1.6 var(--ja); direction: ltr; text-align: center; }
+.wordsheet dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+.wordsheet dt { color: var(--muted); }
+.wordsheet dd { margin: 0; font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { .speaking .mouth, .eyes { animation: none; } .bar i { transition: none; } }
+/* conversation picker, word chips */
+.nums { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.nums button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 0; font-weight: 700; font-variant-numeric: tabular-nums; position: relative; }
+.nums button[aria-pressed="true"] { background: var(--ai); border-color: var(--ai); color: var(--on-ai); }
+.nums button.done::after { content: "✓"; position: absolute; top: 0; inset-inline-end: 5px; font-size: .72rem; color: var(--ok); }
+.nums button.done[aria-pressed="true"]::after { color: var(--on-ai); }
+.wchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.wchip { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 4px 12px; display: inline-flex; gap: 6px; align-items: baseline; }
+.wchip .j { font: 700 1rem var(--ja); }
+.wchip .m { color: var(--muted); font-size: .85rem; }
+.chip.free { border-color: var(--ai); color: var(--ai); }
+.chip.free[aria-pressed="true"] { background: var(--ai); color: var(--on-ai); }
+.tipcard { background: var(--paper); border: 1px solid var(--line); border-inline-start: 4px solid var(--shu); border-radius: 12px; padding: 10px 14px; display: flex; flex-direction: column; gap: 4px; }
+.tipcard b { color: var(--shu); font-size: .9rem; }
+.seg.two { grid-template-columns: repeat(2, auto); align-self: flex-start; }
+/* free chat */
+.chat { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.msg { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.msg.me { align-self: flex-start; max-width: 92%; background: var(--ai-soft); border-radius: 14px; border-start-start-radius: 4px; padding: 10px 14px; }
+.msg.me .learn { border-top: 1px solid var(--line); padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.msg .cap .ja { font-size: 1.2rem; line-height: 1.8; }
+.mini { display: flex; gap: 6px; flex-wrap: wrap; }
+.mini .btn, .mini-btn { padding: 4px 10px; font-size: .85rem; }
+/* trip mode */
+.alg { display: flex; flex-wrap: wrap; gap: 6px; }
+.alg label { border: 1px solid var(--line); background: var(--paper); border-radius: 99px; padding: 4px 12px; display: inline-flex; gap: 6px; align-items: center; font-weight: 600; }
+.alg input { accent-color: var(--ai); width: 16px; height: 16px; }
+.showgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.showgrid button { text-align: start; border: 1px solid var(--line); background: var(--paper); border-radius: 12px; padding: 10px 12px; font-weight: 600; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.showgrid button .j { font: 500 .9rem/1.5 var(--ja); color: var(--muted); direction: ltr; text-align: left; overflow-wrap: anywhere; }
+.showov { position: fixed; inset: 0; z-index: 30; background: var(--surface); display: flex; flex-direction: column; gap: 18px; overflow-y: auto;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.showov .bigja { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: .3em; font: 700 clamp(1.9rem, 8.5vw, 3.4rem)/1.45 var(--ja); direction: ltr; text-align: left; overflow-wrap: anywhere; }
+.showov .bigja.sm { font-size: clamp(1.6rem, 7vw, 2.8rem); }
+.showov .he { font-size: 1.1rem; color: var(--muted); }
+.pb { display: flex; flex-direction: column; }
+.pb .p { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.pb .p[hidden] { display: none; }
+.pb .p .j { font: 500 1.15rem/1.6 var(--ja); direction: ltr; text-align: left; overflow-wrap: anywhere; }
+.pb .p .r { color: var(--muted); font-size: .85rem; direction: ltr; text-align: left; }
+.pb .p .m { font-weight: 700; }
+.pb .p .h { color: var(--muted); font-size: .85rem; }
+.pb .p .act { grid-column: 2; grid-row: 1 / span 4; display: flex; flex-direction: column; gap: 6px; align-items: center; }
+nav button { font-size: .9rem; padding: 8px 2px; line-height: 1.2; }
+.convtitle { margin: 2px 0 -4px; font-size: 1.15rem; }
+.log .l { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+.log .l .lt { min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.log .l .j { font-size: 1.05rem; }
+.log .l .ht { color: var(--muted); font-size: .88rem; }
+.log .l .j .tk { padding: 0; }
+</style>
+
+<div class="app" dir="rtl">
+  <header>
+    <div class="top">
+      <h1>יפנית לדרך<span class="ja" lang="ja">日本語</span></h1>
+      <button class="icon-btn" id="openSettings" aria-label="הגדרות לימוד">הגדרות</button>
+    </div>
+    <nav role="tablist">
+      <button role="tab" data-tab="today" aria-selected="true">היום</button>
+      <button role="tab" data-tab="talk" aria-selected="false">שיחה</button>
+      <button role="tab" data-tab="cards" aria-selected="false">מילים</button>
+      <button role="tab" data-tab="mine" aria-selected="false">המילים שלי</button>
+      <button role="tab" data-tab="trip" aria-selected="false">בטיול</button>
+    </nav>
+  </header>
+  <main id="view" style="display:flex;flex-direction:column;gap:14px"></main>
+  <p class="note">גרסת הדגמה ללא התחברות: משתמש דובר עברית שלומד יפנית. ההתקדמות נשמרת בדפדפן הזה בלבד.</p>
+</div>
+<div id="sheetRoot"></div>
+
+<script type="text/plain" id="dsl">
+@airport|שדה תעופה|ביקורת הגבולות
+
+# המזוודה שלא הגיעה
+r דלפק המטען האבוד
+w スーツケース|sūtsukēsu|מזוודה ; 見つかりません|mitsukarimasen|לא נמצא|みつかりません ; 黒|kuro|שחור|くろ ; 連絡|renraku|הודעה, יצירת קשר|れんらく
+n どう|dō|מה, איך / されましたか。|saremashita ka?|קרה (בנימוס)? = מה קרה?
+u ~sumimasen / スーツケース|sūtsukēsu|מזוודה / ~ga / 見つかりません。|mitsukarimasen.|לא נמצא|みつかりません = סליחה, המזוודה שלי לא נמצאת.
+x スーツケース|sūtsukēsu|מזוודה / ~o / ~kudasai = תן לי מזוודה, בבקשה. = ביקשת לקבל מזוודה. כדי לומר שהמזוודה לא נמצאה אומרים スーツケースが見つかりません (סוצקאס גה מיצוקארימאסן).
+n 何色|naniiro|איזה צבע|なにいろ / ~desuka = באיזה צבע היא?
+u 黒|kuro|שחור|くろ / ~desu = שחורה.
+x 三日|mikka|שלושה ימים|みっか / ~desu = שלושה ימים. = 三日 (מיקה) זה שלושה ימים. שאלו על הצבע: 黒です (קורו דס), שחורה.
+n ~kashiko / ホテル|hoteru|מלון / ~ni / 連絡|renraku|הודעה|れんらく / します。|shimasu.|נעשה = בהחלט. נודיע לך למלון.
+t כשמזוודה לא מגיעה, חברת התעופה שולחת אותה בדרך כלל למלון ברגע שהיא נמצאת. כדאי להחזיק את כתובת המלון ביפנית, למשל בכרטיס "הראה למקומי".
+
+# המרת כסף
+r דלפק המרת מטבע
+w ドル|doru|דולר ; 二百|nihyaku|מאתיים|にひゃく ; 細かい|komakai|קטן (כסף קטן)|こまかい ; 札|satsu|שטר|さつ
+n ~irasshai = ברוכים הבאים.
+u ドル|doru|דולר / ~o / 円|en|ין|えん / ~ni / ~onegai = דולרים לין, בבקשה.
+x 円|en|ין|えん / ~wa / ~doko / ~desuka = איפה הין? = שאלת איפה הין. כדי להמיר אומרים ドルを円にお願いします (דורו או אן ני אונגאישימאס).
+n ~kashiko / いくら|ikura|כמה (סכום) / ~desuka = בהחלט. כמה?
+u 二百|nihyaku|מאתיים|にひゃく / ドル|doru|דולר / ~desu = 200 דולר.
+x 二百人|nihyakunin|מאתיים אנשים|にひゃくにん / ~desu = מאתיים אנשים. = 二百人 (ניהיאקונין) זה מאתיים אנשים. סכום אומרים 二百ドルです (ניהיאקו דורו דס).
+n 一万円|ichiman en|10,000 ין|いちまんえん / 札|satsu|שטרות|さつ / ~de / ~iidesuka = בשטרות של 10,000 ין, זה בסדר?
+u 細かい|komakai|כסף קטן|こまかい / ~no / ~mo / ~onegai = גם קצת כסף קטן, בבקשה.
+x 一万円|ichiman en|10,000 ין|いちまんえん / ~wa / 高い|takai|יקר|たかい / ~desu = 10,000 ין זה יקר. = אמרת שזה יקר. כדי לבקש גם שטרות קטנים אומרים 細かいのもお願いします (קומאקאי נו מו אונגאישימאס).
+t ביפן עדיין משלמים הרבה במזומן, במיוחד במקדשים, בדוכנים ובמסעדות קטנות. כדאי להחזיק תמיד כמה אלפי ין בארנק.
+
+# צ'ק-אין לטיסה
+r דלפק הצ'ק-אין
+w 窓側|madogawa|ליד החלון|まどがわ ; 通路側|tsūrogawa|ליד המעבר|つうろがわ ; 席|seki|מושב|せき ; いくつ|ikutsu|כמה (פריטים)
+n パスポート|pasupōto|דרכון / ~o / ~onegai = את הדרכון, בבקשה.
+u ~hai / ~dozo = כן, הנה.
+x ~irasshai = ברוכים הבאים. = いらっしゃいませ אומר המוכר ללקוח. כשמגישים משהו אומרים どうぞ (דוזו).
+n お席|o-seki|המושב|おせき / ~wa / 窓側|madogawa|ליד החלון|まどがわ / ~to / 通路側|tsūrogawa|ליד המעבר|つうろがわ / どちら|dochira|איזה מהשניים / ~ga / ~iidesuka = איזה מושב תעדיף, ליד החלון או ליד המעבר?
+u 窓側|madogawa|ליד החלון|まどがわ / ~de / ~onegai = ליד החלון, בבקשה.
+x 窓|mado|חלון|まど / ~o / 開けて|akete|לפתוח|あけて / ~kudasai = תפתח את החלון, בבקשה. = ביקשת לפתוח חלון. כדי לבחור מושב ליד החלון אומרים 窓側でお願いします (מאדוגאווה דה אונגאישימאס).
+n ~kashiko / 荷物|nimotsu|מזוודות|にもつ / ~wa / いくつ|ikutsu|כמה / ~desuka = בהחלט. כמה מזוודות?
+u 一つ|hitotsu|אחת|ひとつ / ~desu = אחת.
+x 一人|hitori|אדם אחד|ひとり / ~desu = אדם אחד. = 一人 (היטורי) סופר אנשים. מזוודות סופרים עם つ: 一つです (היטוצו דס).
+t ביפן עומדים בתור מסודר ולא נדחפים, גם בדלפקים וגם ברציף הרכבת. על הרצפה מסומן בדיוק איפה לעמוד.
+
+# כרטיס רכבת מהשדה
+r קופת הכרטיסים בשדה
+w 東京駅|Tōkyō-eki|תחנת טוקיו|とうきょうえき ; 片道|katamichi|הלוך בלבד|かたみち ; 往復|ōfuku|הלוך ושוב|おうふく ; 次|tsugi|הבא|つぎ
+n どちら|dochira|לאן (בנימוס) / ~made / ~desuka = עד לאן?
+u 東京駅|Tōkyō-eki|תחנת טוקיו|とうきょうえき / ~made / 片道|katamichi|הלוך בלבד|かたみち / ~onegai = עד תחנת טוקיו, הלוך בלבד, בבקשה.
+x 東京駅|Tōkyō-eki|תחנת טוקיו|とうきょうえき / ~wa / おいしい|oishii|טעים / ~desu = תחנת טוקיו טעימה. = おいしい (אויישי) זה טעים. כדי לקנות כרטיס אומרים 東京駅まで片道お願いします.
+n 次|tsugi|הבאה|つぎ / ~no / 電車|densha|רכבת|でんしゃ / ~wa / 十時|jūji|השעה עשר|じゅうじ / ~desu = הרכבת הבאה בעשר.
+u 往復|ōfuku|הלוך ושוב|おうふく / ~wa / ~ikura / ~desuka = כמה עולה הלוך ושוב?
+x 往復|ōfuku|הלוך ושוב|おうふく / ~wa / ~doko / ~desuka = איפה הלוך ושוב? = שאלת איפה. על מחיר שואלים いくらですか (איקורה דס קה).
+n 片道|katamichi|הלוך|かたみち / ~no / 二倍|nibai|פי שניים|にばい / ~desu = פי שניים מהלוך.
+t ברכבות מהירות מהשדה המושבים שמורים, ומושב עם מספר לא תופסים סתם. אם יושבים במקום של מישהו, קמים בחיוך ואומרים すみません.
+
+# מכס
+r פקיד המכס
+w 申告|shinkoku|הצהרה (במכס)|しんこく ; お酒|o-sake|אלכוהול|おさけ ; ワイン|wain|יין ; 一本|ippon|בקבוק אחד (דבר ארוך)|いっぽん
+n 申告|shinkoku|להצהיר|しんこく / する|suru|לעשות / もの|mono|דבר / ~wa / ~arimasuka = יש לך משהו להצהיר?
+u ~iie / ありません。|arimasen.|אין = לא, אין.
+x ~iie / 申告|shinkoku|הצהרה|しんこく / ~o / ~kudasai = לא, תן לי הצהרה. = ביקשת לקבל הצהרה. אם אין מה להצהיר עונים いいえ、ありません (איאה, ארימאסן).
+n お酒|o-sake|אלכוהול|おさけ / ~wa / 持って|motte|מחזיק, נושא|もって / いますか。|imasu ka?|(האם)? = יש לך אלכוהול?
+u ワイン|wain|יין / ~ga / 一本|ippon|בקבוק אחד|いっぽん / あります。|arimasu.|יש = יש לי בקבוק יין אחד.
+x ワイン|wain|יין / ~ga / 一人|hitori|אדם אחד|ひとり / あります。|arimasu.|יש = יש יין אדם אחד. = 一人 סופר אנשים. בקבוקים סופרים עם 本 (הון): 一本 (איפון).
+n ~daijobu / ~desu / ~dozo = בסדר. אפשר לעבור.
+t יפן מחמירה עם תרופות: חלק מהתרופות שמותרות בארץ, למשל כאלה עם פסאודואפדרין, אסורות שם. כדאי לבדוק לפני הטיסה ולהביא מרשם באנגלית.
+
+# וויי-פיי לטיול
+r דלפק השכרת ראוטרים
+w Wi-Fi|waifai|וויי-פיי ; 借りたい|karitai|רוצה לשכור|かりたい ; 十日間|tōkakan|עשרה ימים|とおかかん ; 返却|henkyaku|החזרה|へんきゃく
+n ~irasshai = ברוכים הבאים.
+u ポケット|poketto|כיס / Wi-Fi|waifai|וויי-פיי / ~o / 借りたい|karitai|רוצה לשכור|かりたい / ~desu = אני רוצה לשכור וויי-פיי כיס.
+x Wi-Fi|waifai|וויי-פיי / ~wa / 高い|takai|יקר|たかい / ~desu = וויי-פיי יקר. = אמרת רק שזה יקר. כדי לשכור אומרים 借りたいです (קאריטאי דס).
+n 何日間|nannichikan|לכמה ימים|なんにちかん / ~desuka = לכמה ימים?
+u 十日間|tōkakan|עשרה ימים|とおかかん / ~desu = עשרה ימים.
+x 十時|jūji|השעה עשר|じゅうじ / ~desu = השעה עשר. = 十時 (ג'וג'י) היא השעה עשר. עשרה ימים זה 十日間 (טוקאקאן).
+n 返却|henkyaku|ההחזרה|へんきゃく / ~wa / 空港|kūkō|נמל התעופה|くうこう / ~de / ~onegai = את ההחזרה עושים בשדה התעופה, בבקשה.
+t ברכבת ובאוטובוס מעבירים את הטלפון למצב שקט, マナーモード (מאנא מודו). השם עצמו אומר "מצב נימוסים".
+
+# איפה השער?
+r עובדת בטרמינל
+w ゲート|gēto|שער (עלייה למטוס) ; 搭乗|tōjō|עלייה למטוס|とうじょう ; まっすぐ|massugu|ישר ; 何時から|nanji kara|מאיזו שעה|なんじから
+n ~hai / ~dozo = כן, בבקשה.
+u ~sumimasen / ゲート|gēto|שער / 二十四|nijūyon|24|にじゅうよん / ~wa / ~doko / ~desuka = סליחה, איפה שער 24?
+x ゲート|gēto|שער / 二十四|nijūyon|24|にじゅうよん / ~wa / ~ikura / ~desuka = כמה עולה שער 24? = שאלת על מחיר. על מקום שואלים どこですか (דוקו דס קה).
+n あちら|achira|שם / ~desu / まっすぐ|massugu|ישר / 十分|juppun|עשר דקות|じゅっぷん / ぐらい|gurai|בערך / ~desu = שם. ישר, בערך עשר דקות.
+u 搭乗|tōjō|העלייה למטוס|とうじょう / ~wa / 何時|nanji|באיזו שעה|なんじ / ~kara / ~desuka = מאיזו שעה העלייה למטוס?
+x 搭乗|tōjō|העלייה למטוס|とうじょう / ~wa / 何人|nannin|כמה אנשים|なんにん / ~desuka = כמה אנשים עולים? = 何人 (נאנין) שואל על אנשים. על שעה שואלים 何時からですか (נאנג'י קארה דס קה).
+n 二時|niji|השעה שתיים|にじ / 半|han|וחצי|はん / ~kara / ~desu = משתיים וחצי.
+t בשדות התעופה ביפן ההכרזות שקטות, ולפעמים אין הכרזה בכלל. כדאי לעקוב אחרי המסכים ולהגיע לשער מוקדם.
+
+# בידוק ביטחוני
+r מאבטחת בבידוק
+w 液体|ekitai|נוזלים|えきたい ; パソコン|pasokon|מחשב נייד ; 出して|dashite|להוציא|だして ; 水|mizu|מים|みず
+n かばん|kaban|תיק / ~no / 中|naka|בתוך|なか / ~ni / 液体|ekitai|נוזלים|えきたい / ~wa / ~arimasuka = יש נוזלים בתיק?
+u ~hai / 水|mizu|מים|みず / ~ga / あります。|arimasu.|יש = כן, יש מים.
+x ~hai / 水|mizu|מים|みず / ~o / ~kudasai = כן, תן לי מים. = ביקשת לקבל מים. כדי לענות שיש לך מים אומרים 水があります (מיזו גה ארימאס).
+n パソコン|pasokon|מחשב נייד / ~mo / 出して|dashite|להוציא|だして / ~kudasai = תוציא גם את המחשב הנייד, בבקשה.
+u ~hai / ~wakatta = כן, הבנתי.
+x ~iie / いりません。|irimasen.|לא צריך = לא, לא צריך. = いりません (אירימאסן) נשמע כמו סירוב. בבידוק עונים はい、わかりました.
+n ご協力|go-kyōryoku|שיתוף הפעולה|ごきょうりょく / ~arigato = תודה על שיתוף הפעולה.
+t בבידוק ביפן כולם שקטים ומסודרים. מניחים את החפצים בסלסלה בעצמכם ומחכים בתור בסבלנות, בלי לעקוף.
+
+# מונית מהשדה
+r נהג מונית
+w 住所|jūsho|כתובת|じゅうしょ ; 払えますか|haraemasu ka|אפשר לשלם?|はらえますか ; どちら|dochira|לאן ; 三十分|sanjuppun|חצי שעה|さんじゅっぷん
+n どちら|dochira|לאן / ~made / ~desuka = לאן?
+u この|kono|ה... הזה / 住所|jūsho|כתובת|じゅうしょ / ~made / ~onegai = לכתובת הזאת, בבקשה.
+x この|kono|ה... הזה / 住所|jūsho|כתובת|じゅうしょ / ~wa / ~ikura / ~desuka = כמה עולה הכתובת? = שאלת על מחיר. כדי לנסוע לכתובת אומרים この住所までお願いします (קונו ג'ושו מאדה אונגאישימאס).
+n ~kashiko / 三十分|sanjuppun|חצי שעה|さんじゅっぷん / ぐらい|gurai|בערך / ~desu = בהחלט. בערך חצי שעה.
+u カード|kādo|כרטיס אשראי / ~de / 払えますか。|haraemasu ka?|אפשר לשלם?|はらえますか = אפשר לשלם בכרטיס?
+x カード|kādo|כרטיס אשראי / ~o / ~kudasai = תן לי כרטיס. = ביקשת לקבל כרטיס. כדי לשאול אם אפשר לשלם בכרטיס אומרים カードで払えますか (קאדו דה האראמאס קה).
+n ~hai / 払えます。|haraemasu.|אפשר|はらえます = כן, אפשר.
+t במוניות ביפן הדלת האחורית נפתחת ונסגרת לבד. לא פותחים ולא טורקים אותה, והנהגים לא מצפים לטיפ.
+
+@transport|תחבורה ציבורית|דלפק המידע בתחנה
+
+# כרטיס נסיעה נטען
+r דלפק הכרטיסים בתחנה
+w ICカード|ai shī kādo|כרטיס נסיעה נטען ; 買いたい|kaitai|רוצה לקנות|かいたい ; 機械|kikai|מכונה|きかい ; チャージ|chāji|טעינה
+n ~hai / ~dozo = כן, בבקשה.
+u ICカード|ai shī kādo|כרטיס נסיעה נטען / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = אני רוצה לקנות כרטיס נסיעה נטען.
+x ICカード|ai shī kādo|כרטיס נסיעה נטען / ~wa / おいしい|oishii|טעים / ~desu = הכרטיס טעים. = おいしい (אויישי) זה טעים. כדי לקנות אומרים 買いたいです (קאיטאי דס).
+n あちら|achira|שם / ~no / 機械|kikai|מכונה|きかい / ~de / 買えます。|kaemasu.|אפשר לקנות|かえます = אפשר לקנות במכונה שם.
+u チャージ|chāji|טעינה / ~mo / できますか。|dekimasu ka?|אפשר? = אפשר גם לטעון אותו?
+x 機械|kikai|מכונה|きかい / ~wa / ~ikura / ~desuka = כמה עולה המכונה? = שאלת כמה עולה המכונה. על טעינה שואלים チャージもできますか (צ'אג'י מו דקימאס קה).
+n ~hai / 現金|genkin|מזומן|げんきん / ~de / できます。|dekimasu.|אפשר = כן, אפשר עם מזומן.
+t כרטיס נסיעה נטען עובד ברוב הרכבות והאוטובוסים בערים הגדולות, ואפשר לשלם בו גם בחנויות נוחות ובמכונות שתייה.
+
+# כמה תחנות?
+r נוסעת ברציף
+w 何駅目|nan'ekime|התחנה הכמה|なんえきめ ; 三つ目|mittsume|השלישית|みっつめ ; 降ります|orimasu|לרדת (מכלי תחבורה)|おります
+n ~hai / 何でしょう。|nan deshō?|במה אפשר לעזור?|なんでしょう = כן? במה אפשר לעזור?
+u ~sumimasen / 渋谷|Shibuya|שיבויה|しぶや / ~wa / 何駅目|nan'ekime|התחנה הכמה|なんえきめ / ~desuka = סליחה, שיבויה זו התחנה הכמה?
+x 渋谷|Shibuya|שיבויה|しぶや / ~wa / ~ikura / ~desuka = כמה עולה שיבויה? = שאלת על מחיר. כדי לשאול כמה תחנות אומרים 何駅目ですか (נאן אקימה דס קה).
+n 三つ目|mittsume|השלישית|みっつめ / ~desu = התחנה השלישית.
+u 三つ目|mittsume|בשלישית|みっつめ / ~de / 降ります|orimasu|ארד|おります / ね。|ne.|נכון? = אז אני יורד בשלישית, נכון?
+x 三人|sannin|שלושה אנשים|さんにん / ~desu = שלושה אנשים. = 三人 (סאנין) זה שלושה אנשים. כדי לוודא אומרים 三つ目で降りますね (מיצומה דה אורימאס נה).
+n そうです。|sō desu.|נכון / 次|tsugi|הבאה|つぎ / ~wa / 代々木|Yoyogi|יויוגי|よよぎ / ~desu = נכון. התחנה הבאה היא יויוגי.
+t ברכבת מפנים מקום ליד הדלת לאנשים שיורדים, ונכנסים רק אחרי שכולם יצאו.
+
+# אוטובוס לקינקאקוג'י
+r נהג האוטובוס
+w バス|basu|אוטובוס ; 行きますか|ikimasu ka|נוסע ל...?|いきますか ; 着いたら|tsuitara|כשנגיע|ついたら ; 使えますか|tsukaemasu ka|אפשר להשתמש?|つかえますか
+n ~dozo = בבקשה, עלו.
+u ~sumimasen / この|kono|ה... הזה / バス|basu|אוטובוס / ~wa / 金閣寺|Kinkakuji|קינקאקוג'י|きんかくじ / ~ni / 行きますか。|ikimasu ka?|נוסע?|いきますか = סליחה, האוטובוס הזה נוסע לקינקאקוג'י?
+x 金閣寺|Kinkakuji|קינקאקוג'י|きんかくじ / ~o / ~kudasai = תן לי את קינקאקוג'י. = ביקשת לקבל את המקדש. כדי לשאול על הקו אומרים このバスは金閣寺に行きますか.
+n ~hai / 行きます。|ikimasu.|נוסע|いきます / 着いたら|tsuitara|כשנגיע|ついたら / 教えます。|oshiemasu.|אגיד לך|おしえます = כן, הוא נוסע לשם. אגיד לך כשנגיע.
+u ICカード|ai shī kādo|כרטיס נסיעה נטען / ~wa / 使えますか。|tsukaemasu ka?|אפשר להשתמש?|つかえますか = אפשר לשלם בכרטיס נסיעה נטען?
+x ICカード|ai shī kādo|כרטיס נסיעה נטען / ~o / 食べます。|tabemasu.|אוכל|たべます = אני אוכל את הכרטיס. = 食べます (טאבמאס) זה לאכול. אומרים ICカードは使えますか (צוקאאמאס קה).
+n ~hai / 使えます。|tsukaemasu.|אפשר|つかえます = כן, אפשר.
+t באוטובוס ביפן לוחצים על הכפתור לפני התחנה, ונשארים לשבת עד שהאוטובוס עוצר לגמרי.
+
+# שינקנסן: מקום שמור
+r קופת הכרטיסים
+w 新幹線|shinkansen|רכבת הקליע|しんかんせん ; 指定席|shiteiseki|מושב שמור|していせき ; 大人|otona|מבוגר|おとな ; 二枚|nimai|שני כרטיסים|にまい
+n どちら|dochira|לאן (בנימוס) / ~made / ~desuka = עד לאן?
+u 京都|Kyōto|קיוטו|きょうと / ~made / 新幹線|shinkansen|רכבת הקליע|しんかんせん / ~de / ~onegai = לקיוטו, ברכבת הקליע, בבקשה.
+x 京都|Kyōto|קיוטו|きょうと / ~wa / ~doko / ~desuka = איפה קיוטו? = שאלת איפה קיוטו. כדי לקנות כרטיס אומרים 京都まで新幹線でお願いします.
+n 指定席|shiteiseki|מושב שמור|していせき / ~desuka = מושב שמור?
+u ~hai / 大人|otona|מבוגר|おとな / 二枚|nimai|שני כרטיסים|にまい / ~onegai = כן, שני כרטיסים למבוגרים, בבקשה.
+x ~hai / 大人|otona|מבוגר|おとな / 二本|nihon|שניים (חפצים ארוכים)|にほん / ~onegai = כן, שני בקבוקים למבוגרים. = 本 (הון) סופר חפצים ארוכים, כמו בקבוקים. כרטיסים סופרים עם 枚 (מאי): 二枚 (נימאי).
+n ~kashiko / 七号車|nana-gōsha|קרון 7|ななごうしゃ / ~desu = בהחלט. קרון 7.
+t בשינקנסן מותר לאכול. נהוג לקנות 駅弁 (אקיבן), קופסת אוכל של התחנה. לפני שמטים את המושב אחורה, שואלים את מי שיושב מאחור.
+
+# מטריה שנשכחה ברכבת
+r משרד האבדות בתחנה
+w 傘|kasa|מטריה|かさ ; 忘れました|wasuremashita|שכחתי|わすれました ; 青い|aoi|כחול|あおい ; どんな|donna|איזה (מה סוגו)
+n ~hai / どう|dō|מה / しましたか。|shimashita ka?|קרה? = כן, מה קרה?
+u 電車|densha|רכבת|でんしゃ / ~ni / 傘|kasa|מטריה|かさ / ~o / 忘れました。|wasuremashita.|שכחתי|わすれました = שכחתי מטריה ברכבת.
+x 電車|densha|רכבת|でんしゃ / ~ni / 乗りたい|noritai|רוצה לעלות|のりたい / ~desu = אני רוצה לעלות על הרכבת. = אמרת שאתה רוצה לעלות לרכבת. כדי לומר ששכחת אומרים 傘を忘れました (קאסה או וואסורמאשיטה).
+n どんな|donna|איזו / 傘|kasa|מטריה|かさ / ~desuka = איזו מטריה?
+u 青い|aoi|כחולה|あおい / 傘|kasa|מטריה|かさ / ~desu = מטריה כחולה.
+x 青い|aoi|כחולה|あおい / 電車|densha|רכבת|でんしゃ / ~desu = רכבת כחולה. = שאלו על המטריה, לא על הרכבת: 青い傘です (אאוי קאסה דס).
+n ~shosho = רגע אחד, המתן בבקשה.
+t ביפן חפצים שנשכחו מגיעים כמעט תמיד למשרד האבדות. אפשר לשאול בכל תחנה על 忘れ物 (וואסורמונו), חפץ שנשכח.
+
+# יציאה מזרחית ומעלית
+r עובד התחנה
+w 東口|higashiguchi|יציאה מזרחית|ひがしぐち ; 階段|kaidan|מדרגות|かいだん ; エレベーター|erebētā|מעלית ; 重い|omoi|כבד|おもい
+n ~hai / 何でしょう。|nan deshō?|במה אפשר לעזור?|なんでしょう = כן? במה אפשר לעזור?
+u ~sumimasen / 東口|higashiguchi|היציאה המזרחית|ひがしぐち / ~wa / ~doko / ~desuka = סליחה, איפה היציאה המזרחית?
+x 東口|higashiguchi|היציאה המזרחית|ひがしぐち / ~wa / ~ikura / ~desuka = כמה עולה היציאה המזרחית? = שאלת על מחיר. על מקום שואלים どこですか (דוקו דס קה).
+n この|kono|ה... הזה / 階段|kaidan|מדרגות|かいだん / ~o / 上がって|agatte|לעלות|あがって / 右|migi|ימינה|みぎ / ~desu = עולים במדרגות האלה, ואז ימינה.
+u 荷物|nimotsu|מזוודות|にもつ / ~ga / 重い|omoi|כבד|おもい / ~desu / エレベーター|erebētā|מעלית / ~wa / ~arimasuka = המזוודות כבדות. יש מעלית?
+x エレベーター|erebētā|מעלית / ~o / ~kudasai = תן לי מעלית. = ביקשת "לקבל" מעלית. שואלים אם יש: エレベーターはありますか (ארבטא וה ארימאס קה).
+n ~hai / あちら|achira|שם / ~ni / あります。|arimasu.|יש = כן, יש שם.
+t בתחנות גדולות יש עשרות יציאות. כדאי לדעת מראש את היציאה שליד המלון, למשל 東口 (מזרחית) או 西口 (מערבית).
+
+# הרכבת האחרונה
+r דלפק המידע
+w 終電|shūden|הרכבת האחרונה|しゅうでん ; 今|ima|עכשיו|いま ; 間に合いますか|ma ni aimasu ka|אספיק?|まにあいますか ; 急いで|isoide|מהר|いそいで
+n ~hai / ~dozo = כן, בבקשה.
+u 終電|shūden|הרכבת האחרונה|しゅうでん / ~wa / 何時|nanji|באיזו שעה|なんじ / ~desuka = באיזו שעה הרכבת האחרונה?
+x 終電|shūden|הרכבת האחרונה|しゅうでん / ~wa / ~doko / ~desuka = איפה הרכבת האחרונה? = שאלת איפה. על שעה שואלים 何時 (נאנג'י): 終電は何時ですか.
+n 十二時|jūniji|השעה 12|じゅうにじ / 十分|juppun|ועשר דקות|じゅっぷん / ~desu = 12:10.
+u 今|ima|עכשיו|いま / ~kara / 行って|itte|ללכת|いって / 間に合いますか。|ma ni aimasu ka?|אספיק?|まにあいますか = אם אצא עכשיו, אספיק?
+x 十二時|jūniji|בשעה 12|じゅうにじ / ~ni / 寝ます。|nemasu.|אלך לישון|ねます = אלך לישון ב-12. = אמרת מתי תלך לישון. כדי לשאול אם תספיק אומרים 間に合いますか (מא ני אאימאס קה).
+n ~daijobu / ~desu / 急いで|isoide|מהר|いそいで / ~kudasai = בסדר, אבל מהרו!
+t הרכבות ביפן לא נוסעות כל הלילה. אחרי 終電 (שודן) נשארות רק מוניות, שהן יקרות, אז כדאי לבדוק את השעה מראש.
+
+# השכרת אופניים
+r השכרת אופניים
+w 自転車|jitensha|אופניים|じてんしゃ ; 一日|ichinichi|יום אחד|いちにち ; 返しますか|kaeshimasu ka|להחזיר?|かえしますか ; 夕方|yūgata|ערב מוקדם|ゆうがた
+n ~irasshai = ברוכים הבאים.
+u 自転車|jitensha|אופניים|じてんしゃ / ~o / 借りたい|karitai|רוצה לשכור|かりたい / ~desu = אני רוצה לשכור אופניים.
+x 自転車|jitensha|אופניים|じてんしゃ / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = אני רוצה לקנות אופניים. = 買いたい (קאיטאי) זה לקנות. לשכור זה 借りたい (קאריטאי).
+n 一日|ichinichi|ליום|いちにち / 千円|sen en|1,000 ין|せんえん / ~desu = 1,000 ין ליום.
+u 何時|nanji|איזו שעה|なんじ / ~made / ~ni / 返しますか。|kaeshimasu ka?|להחזיר?|かえしますか = עד איזו שעה צריך להחזיר?
+x 何時|nanji|באיזו שעה|なんじ / ~ni / 食べますか。|tabemasu ka?|אוכלים?|たべますか = באיזו שעה אוכלים? = שאלת מתי אוכלים. על החזרה שואלים 何時までに返しますか.
+n 夕方|yūgata|בערב|ゆうがた / 六時|rokuji|השעה שש|ろくじ / ~made / ~ni / ~onegai = עד שש בערב, בבקשה.
+t ביפן רוכבים בצד שמאל, ומחנים אופניים רק במקומות מסומנים. אופניים שהוחנו במקום אסור נגררים.
+
+# עיכוב ברכבת
+r נוסעת לידך ברציף
+w 遅れて|okurete|מתעכב|おくれて ; どうして|dōshite|למה ; 事故|jiko|תקלה, תאונה|じこ ; 別|betsu|אחר|べつ
+n 電車|densha|הרכבת|でんしゃ / ~ga / 遅れて|okurete|מתעכבת|おくれて / います。|imasu.|(עכשיו) = הרכבת מתעכבת.
+u どうして|dōshite|למה / ~desuka = למה?
+x ~doko / ~desuka = איפה? = שאלת איפה. כדי לשאול למה אומרים どうしてですか (דושיטה דס קה).
+n 事故|jiko|תקלה|じこ / ~desu / 三十分|sanjuppun|חצי שעה|さんじゅっぷん / ぐらい|gurai|בערך / 動きません。|ugokimasen.|לא זז|うごきません = הייתה תקלה. היא לא תזוז בערך חצי שעה.
+u 別|betsu|אחר|べつ / ~no / 電車|densha|רכבת|でんしゃ / ~wa / ~arimasuka = יש רכבת אחרת?
+x 電車|densha|רכבת|でんしゃ / ~ga / 好き|suki|אוהב|すき / ~desu = אני אוהב רכבות. = אמרת שאתה אוהב רכבות. כדי לשאול על חלופה אומרים 別の電車はありますか (בצו נו דנשה וה ארימאס קה).
+n 地下鉄|chikatetsu|רכבת תחתית|ちかてつ / ~ga / 便利|benri|נוח|べんり / ~desu = הרכבת התחתית נוחה יותר.
+t כשרכבת מתעכבת ביפן, אפשר לבקש בשער 遅延証明書 (צ'יאן שומישו), אישור עיכוב. יפנים מגישים אותו בעבודה כדי להסביר איחור.
+
+@hotel|מלון וצ'ק-אין|דלפק הקבלה במלון
+
+# צ'ק-אין
+w 予約|yoyaku|הזמנה|よやく ; チェックイン|chekku in|צ'ק-אין ; 朝ご飯|asagohan|ארוחת בוקר|あさごはん ; 八階|hachikai|קומה 8|はちかい
+n ~irasshai / チェックイン|chekku in|צ'ק-אין / ~desuka = ברוכים הבאים. צ'ק-אין?
+u ~hai / 予約|yoyaku|הזמנה|よやく / ~ga / あります。|arimasu.|יש / レビ|Rebi|לוי / ~desu = כן, יש לי הזמנה. על שם לוי.
+x ~hai / 予約|yoyaku|הזמנה|よやく / ~o / ~kudasai = כן, תן לי הזמנה. = ביקשת "לקבל" הזמנה. כשכבר הזמנת אומרים 予約があります (יויאקו גה ארימאס) ואת שמך.
+n レビ様|Rebi-sama|לוי (בנימוס)|レビさま / ~desune / パスポート|pasupōto|דרכון / ~o / ~onegai = לוי, נכון? את הדרכון, בבקשה.
+u ~hai / ~dozo / 朝ご飯|asagohan|ארוחת בוקר|あさごはん / ~wa / 何時|nanji|איזו שעה|なんじ / ~kara / ~desuka = הנה. מאיזו שעה ארוחת הבוקר?
+x ~hai / ~arigato = כן, תודה רבה. = כשמגישים דרכון לא אומרים תודה. אומרים どうぞ (דוזו), "הנה, בבקשה".
+n 七時|shichiji|השעה שבע|しちじ / ~kara / ~desu / お部屋|o-heya|החדר|おへや / ~wa / 八階|hachikai|קומה 8|はちかい / ~desu = משבע. החדר בקומה 8.
+t במלונות ביפן הצ'ק-אין בדרך כלל רק משלוש אחר הצהריים. אם מגיעים מוקדם, משאירים את המזוודות בקבלה ויוצאים לטייל.
+
+# השארת מזוודות
+w 預かって|azukatte|לשמור (בשבילי)|あずかって ; ごろ|goro|בערך (בשעה) ; 戻ります|modorimasu|לחזור|もどります ; 番号札|bangōfuda|פתק מספר|ばんごうふだ
+n ~irasshai = ברוכים הבאים.
+u 荷物|nimotsu|מזוודות|にもつ / ~o / 預かって|azukatte|לשמור|あずかって / もらえますか。|moraemasu ka?|תוכלו (בשבילי)? = תוכלו לשמור את המזוודות שלי?
+x 荷物|nimotsu|מזוודות|にもつ / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = אני רוצה לקנות מזוודות. = 買いたい (קאיטאי) זה לקנות. כדי לבקש שישמרו אומרים 荷物を預かってもらえますか.
+n ~hai / 何時|nanji|איזו שעה|なんじ / ごろ|goro|בערך / 戻りますか。|modorimasu ka?|תחזרו?|もどりますか = כן. בערך באיזו שעה תחזרו?
+u 五時|goji|השעה חמש|ごじ / ごろ|goro|בערך / 戻ります。|modorimasu.|אחזור|もどります = אחזור בערך בחמש.
+x 五日|itsuka|חמישה ימים|いつか / ~desu = חמישה ימים. = 五日 (איצוקה) זה חמישה ימים. השעה חמש היא 五時 (גוג'י).
+n ~kashiko / こちら|kochira|זה / ~ga / 番号札|bangōfuda|פתק מספר|ばんごうふだ / ~desu = בהחלט. הנה פתק המספר.
+t ביפן נהוג להשאיר מזוודות בקבלה גם אחרי צ'ק-אאוט. בתחנות יש גם לוקרים, コインロッカー (קוין רוקא), בכל הגדלים.
+
+# המזגן לא עובד
+r דלפק הקבלה (בטלפון)
+w 部屋|heya|חדר|へや ; エアコン|eakon|מזגן ; 壊れています|kowarete imasu|מקולקל|こわれています ; すぐ|sugu|מיד
+n ~hai / フロント|furonto|הקבלה / ~desu = כן, הקבלה.
+u 五〇三号室|go-maru-san gōshitsu|חדר 503|ごまるさんごうしつ / ~desu / エアコン|eakon|מזגן / ~ga / 壊れています。|kowarete imasu.|מקולקל|こわれています = מדבר מחדר 503. המזגן מקולקל.
+x 五〇三号室|go-maru-san gōshitsu|חדר 503|ごまるさんごうしつ / ~desu / エアコン|eakon|מזגן / ~ga / 好き|suki|אוהב|すき / ~desu = מחדר 503. אני אוהב את המזגן. = אמרת שאתה אוהב את המזגן. כדי לומר שהוא מקולקל אומרים エアコンが壊れています (אאקון גה קוווארטה אימאס).
+n 申し訳ございません。|mōshiwake gozaimasen.|אנחנו מאוד מצטערים|もうしわけございません / すぐ|sugu|מיד / 行きます。|ikimasu.|נבוא|いきます = אנחנו מאוד מצטערים. נבוא מיד.
+u よろしく|yoroshiku|בבקשה, אסמוך עליכם / ~onegai = תודה מראש.
+x ~irasshai = ברוכים הבאים. = いらっしゃいませ אומר המוכר ללקוח. כאן אומרים よろしくお願いします (יורושיקו אונגאישימאס).
+n 十分|juppun|עשר דקות|じゅっぷん / ほど|hodo|בערך / お待ちください。|omachi kudasai.|המתינו בבקשה|おまちください = המתינו בבקשה בערך עשר דקות.
+t מספר חדר נקרא ביפנית ספרה אחרי ספרה, ו-0 נקרא まる (מארו), כמו עיגול. לכן 503 הוא ごまるさん (גו-מארו-סאן).
+
+# מגבת ומברשת שיניים
+r דלפק הקבלה (בטלפון)
+w タオル|taoru|מגבת ; もう一枚|mō ichimai|עוד אחת (פריט שטוח)|もういちまい ; 歯ブラシ|haburashi|מברשת שיניים|はブラシ ; 何か|nanika|משהו|なにか
+n ~hai / フロント|furonto|הקבלה / ~desu = כן, הקבלה.
+u タオル|taoru|מגבת / ~o / もう一枚|mō ichimai|עוד אחת|もういちまい / ~onegai = עוד מגבת אחת, בבקשה.
+x タオル|taoru|מגבת / ~wa / おいしい|oishii|טעים / ~desu = המגבת טעימה. = おいしい זה טעים. כדי לבקש עוד מגבת אומרים タオルをもう一枚お願いします.
+n ~kashiko / ほか|hoka|עוד, אחר / ~ni / 何か|nanika|משהו|なにか / ~arimasuka = בהחלט. צריך עוד משהו?
+u 歯ブラシ|haburashi|מברשת שיניים|はブラシ / ~mo / ~onegai = גם מברשת שיניים, בבקשה.
+x 歯医者|haisha|רופא שיניים|はいしゃ / ~mo / ~onegai = גם רופא שיניים, בבקשה. = 歯医者 (האישה) זה רופא שיניים. מברשת שיניים היא 歯ブラシ (האבוראשי).
+n すぐ|sugu|מיד / お持ちします。|omochi shimasu.|נביא|おもちします = נביא מיד.
+t בהרבה מלונות ביפן מברשות שיניים ונעלי בית מחכות בחדר. היום חלק מהמלונות נותנים אותן רק לפי בקשה, כדי לחסוך בפלסטיק.
+
+# צ'ק-אאוט ומיני-בר
+w チェックアウト|chekku auto|צ'ק-אאוט ; 鍵|kagi|מפתח|かぎ ; 冷蔵庫|reizōko|מקרר|れいぞうこ ; 使いませんでした|tsukaimasen deshita|לא השתמשתי|つかいませんでした
+n おはようございます。|ohayō gozaimasu.|בוקר טוב = בוקר טוב.
+u チェックアウト|chekku auto|צ'ק-אאוט / ~o / ~onegai / これ|kore|זה / ~ga / 鍵|kagi|המפתח|かぎ / ~desu = צ'ק-אאוט, בבקשה. הנה המפתח.
+x チェックイン|chekku in|צ'ק-אין / ~o / ~onegai = צ'ק-אין, בבקשה. = צ'ק-אין זו כניסה. ביציאה מהמלון אומרים チェックアウトをお願いします (צ'קו אאוטו או אונגאישימאס).
+n 冷蔵庫|reizōko|מקרר|れいぞうこ / ~no / 飲み物|nomimono|משקאות|のみもの / ~wa / 使いましたか。|tsukaimashita ka?|השתמשתם?|つかいましたか = השתמשתם במשקאות מהמקרר?
+u ~iie / 使いませんでした。|tsukaimasen deshita.|לא השתמשתי|つかいませんでした = לא, לא השתמשתי.
+x ~iie / 冷蔵庫|reizōko|מקרר|れいぞうこ / ~wa / ~doko / ~desuka = לא. איפה המקרר? = שאלת איפה המקרר. כדי לענות שלא השתמשת אומרים 使いませんでした (צוקאימאסן דשיטה).
+n ありがとうございました。|arigatō gozaimashita.|תודה רבה (על השהות) / また|mata|שוב / お越しください。|okoshi kudasai.|בואו (בנימוס)|おこしください = תודה רבה. בואו שוב.
+t גם במלון ביפן לא משאירים טיפ. כדי להודות לצוות אומרים ありがとうございました ומשתחווים קלות.
+
+# ריוקאן ואונסן
+r מארחת בריוקאן
+w 温泉|onsen|מעיינות חמים|おんせん ; 入れますか|hairemasu ka|אפשר להיכנס?|はいれますか ; タトゥー|tatū|קעקוע ; 隠して|kakushite|לכסות, להסתיר|かくして
+n ようこそ|yōkoso|ברוכים הבאים / いらっしゃいました。|irasshaimashita.|באתם (בנימוס) = ברוכים הבאים לריוקאן.
+u 温泉|onsen|מעיינות חמים|おんせん / ~wa / 何時|nanji|איזו שעה|なんじ / ~made / 入れますか。|hairemasu ka?|אפשר להיכנס?|はいれますか = עד איזו שעה אפשר להיכנס לאונסן?
+x 温泉|onsen|מעיינות חמים|おんせん / ~o / 食べたい|tabetai|רוצה לאכול|たべたい / ~desu = אני רוצה לאכול אונסן. = 食べたい (טאבטאי) זה רוצה לאכול. על שעות שואלים 何時まで入れますか (נאנג'י מאדה האירמאס קה).
+n 夜|yoru|בלילה|よる / 十一時|jūichiji|השעה 11|じゅういちじ / ~made / ~desu = עד 11 בלילה.
+u タトゥー|tatū|קעקוע / ~ga / あります|arimasu|יש / が、|ga,|אבל / ~daijobu / ~desuka = יש לי קעקוע. זה בסדר?
+x タトゥー|tatū|קעקוע / ~o / ~kudasai = תן לי קעקוע. = ביקשת לקבל קעקוע. כדי לשאול אם קעקוע בסדר אומרים タトゥーがありますが、大丈夫ですか.
+n 小さい|chiisai|קטנה|ちいさい / シール|shīru|מדבקה / ~de / 隠して|kakushite|לכסות|かくして / ~kudasai = כסו אותו במדבקה קטנה, בבקשה.
+t באונסן מתרחצים היטב בישיבה לפני שנכנסים למים, ולא מכניסים את המגבת הקטנה למים. בהרבה אונסנים קעקועים עדיין בעייתיים, אז כדאי לשאול מראש.
+
+# יש חדר פנוי?
+w 今晩|konban|הלילה|こんばん ; 空いて|aite|פנוי|あいて ; ツイン|tsuin|חדר עם שתי מיטות ; 一泊|ippaku|לילה אחד (לינה)|いっぱく
+n ~irasshai = ברוכים הבאים.
+u 今晩|konban|הלילה|こんばん / 部屋|heya|חדר|へや / ~wa / 空いて|aite|פנוי|あいて / いますか。|imasu ka?|יש? = יש חדר פנוי להלילה?
+x 今晩|konban|הלילה|こんばん / ~wa / 寒い|samui|קר|さむい / ~desu = הלילה קר. = אמרת שהלילה קר. כדי לשאול על חדר אומרים 部屋は空いていますか (הייה וה אאיטה אימאס קה).
+n 何名様|nanmei-sama|כמה אנשים (בנימוס)|なんめいさま / ~desuka = כמה אנשים?
+u 二人|futari|שני אנשים|ふたり / ~desu / ツイン|tsuin|חדר עם שתי מיטות / ~de / ~onegai = שניים. חדר עם שתי מיטות, בבקשה.
+x 二つ|futatsu|שניים (חפצים)|ふたつ / ~desu = שני דברים. = 二つ (פוטאצו) סופר חפצים. אנשים סופרים 二人 (פוטארי).
+n 一泊|ippaku|ללילה|いっぱく / 一万二千円|ichiman nisen en|12,000 ין|いちまんにせんえん / ~desu = 12,000 ין ללילה.
+t בחלק מהערים ביפן, כמו טוקיו וקיוטו, משלמים בנוסף מס לינה קטן לכל לילה. לפעמים הוא לא כלול במחיר שבאתר ההזמנות.
+
+# המלצה על מסעדה
+w 近く|chikaku|קרוב|ちかく ; おすすめ|osusume|המלצה, מומלץ ; 地図|chizu|מפה|ちず ; 歩いて|aruite|ברגל|あるいて
+n ~hai / 何でしょう。|nan deshō?|במה אפשר לעזור?|なんでしょう = כן? במה אפשר לעזור?
+u この|kono|ה... הזה / 近く|chikaku|קרוב|ちかく / ~ni / おすすめ|osusume|מומלצת / ~no / レストラン|resutoran|מסעדה / ~wa / ~arimasuka = יש מסעדה מומלצת כאן קרוב?
+x レストラン|resutoran|מסעדה / ~wa / 高い|takai|יקר|たかい / ~desu = המסעדה יקרה. = אמרת שהמסעדה יקרה. כדי לבקש המלצה אומרים おすすめのレストランはありますか (אוסוסומה נו רסוטוראן וה ארימאס קה).
+n 角|kado|הפינה|かど / ~no / そば屋|sobaya|מסעדת סובה|そばや / ~ga / おいしい|oishii|טעים / ~desu = מסעדת הסובה בפינה טעימה.
+u 地図|chizu|מפה|ちず / ~o / もらえますか。|moraemasu ka?|אפשר לקבל? = אפשר לקבל מפה?
+x 地図|chizu|מפה|ちず / ~o / 食べます。|tabemasu.|אוכל|たべます = אני אוכל את המפה. = 食べます זה לאכול. כדי לבקש מפה אומרים 地図をもらえますか (צ'יזו או מוראמאס קה).
+n ~hai / ~dozo / 歩いて|aruite|ברגל|あるいて / 五分|gofun|חמש דקות|ごふん / ~desu = בבקשה. חמש דקות הליכה.
+t ליד מסעדות טובות יש לפעמים תור בחוץ. עומדים בו בשקט, ולפעמים כותבים את השם על דף ליד הדלת וממתינים שיקראו לכם.
+
+# כביסה
+w 洗濯機|sentakuki|מכונת כביסה|せんたくき ; 乾燥機|kansōki|מייבש|かんそうき ; 何階|nangai|באיזו קומה|なんがい ; 二階|nikai|קומה 2|にかい
+n ~hai / 何でしょう。|nan deshō?|במה אפשר לעזור?|なんでしょう = כן? במה אפשר לעזור?
+u 洗濯機|sentakuki|מכונת כביסה|せんたくき / ~wa / ~arimasuka = יש מכונת כביסה?
+x 洗濯機|sentakuki|מכונת כביסה|せんたくき / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = אני רוצה לקנות מכונת כביסה. = רצית לקנות מכונה. כדי לשאול אם יש אומרים 洗濯機はありますか (סנטאקוקי וה ארימאס קה).
+n ~hai / コインランドリー|koin randorī|מכבסה בשירות עצמי / ~ga / あります。|arimasu.|יש = כן, יש מכבסה בשירות עצמי.
+u 何階|nangai|באיזו קומה|なんがい / ~desuka = באיזו קומה?
+x 何人|nannin|כמה אנשים|なんにん / ~desuka = כמה אנשים? = 何人 (נאנין) שואל על אנשים. על קומה שואלים 何階ですか (נאנגאי דס קה).
+n 二階|nikai|קומה 2|にかい / ~desu / 乾燥機|kansōki|מייבש|かんそうき / ~mo / あります。|arimasu.|יש = בקומה 2. יש גם מייבש.
+t בהרבה מלונות עסקים ביפן יש מכונות כביסה בתשלום קטן. אבקת הכביסה נמכרת במכונה עצמה או בקבלה.
+
+# מונית למחר בבוקר
+w 明日|ashita|מחר|あした ; 朝|asa|בוקר|あさ ; 呼んで|yonde|להזמין, לקרוא|よんで ; 六時半|rokuji han|שש וחצי|ろくじはん
+n ~hai / ~dozo = כן, בבקשה.
+u 明日|ashita|מחר|あした / ~no / 朝|asa|בבוקר|あさ / タクシー|takushī|מונית / ~o / 呼んで|yonde|להזמין|よんで / もらえますか。|moraemasu ka?|תוכלו? = תוכלו להזמין לי מונית מחר בבוקר?
+x タクシー|takushī|מונית / ~ga / 好き|suki|אוהב|すき / ~desu = אני אוהב מוניות. = אמרת שאתה אוהב מוניות. כדי לבקש שיזמינו אומרים タクシーを呼んでもらえますか.
+n 何時|nanji|איזו שעה|なんじ / ~ni / しますか。|shimasu ka?|לקבוע? = לאיזו שעה?
+u 六時半|rokuji han|שש וחצי|ろくじはん / ~ni / ~onegai = לשש וחצי, בבקשה.
+x 六人|rokunin|שישה אנשים|ろくにん / ~desu = שישה אנשים. = 六人 (רוקונין) זה שישה אנשים. שש וחצי זה 六時半 (רוקוג'י האן).
+n ~kashiko / 空港|kūkō|נמל התעופה|くうこう / ~made / ~desune = בהחלט. לשדה התעופה, נכון?
+t הקבלה במלון תשמח להזמין לכם מונית או לכתוב לנהג את היעד ביפנית. כדאי גם לקחת כרטיס עם כתובת המלון לכל יציאה.
+
+@restaurant|מסעדה|צוות המסעדה
+
+# אלרגיה לבוטנים
+r המלצרית
+w アレルギー|arerugī|אלרגיה ; ピーナッツ|pīnattsu|בוטנים ; 料理|ryōri|מנה, אוכל|りょうり ; 入って|haitte|נמצא בתוך|はいって
+n ご注文|go-chūmon|ההזמנה|ごちゅうもん / ~wa / お決まり|o-kimari|הוחלטה|おきまり / ~desuka = החלטתם מה להזמין?
+u ピーナッツ|pīnattsu|בוטנים / ~no / アレルギー|arerugī|אלרגיה / ~ga / あります。|arimasu.|יש = יש לי אלרגיה לבוטנים.
+x ピーナッツ|pīnattsu|בוטנים / ~ga / 好き|suki|אוהב|すき / ~desu = אני אוהב בוטנים. = אמרת שאתה אוהב בוטנים! אלרגיה אומרים ピーナッツのアレルギーがあります (פינאצו נו ארורוגי גה ארימאס).
+n ~kashiko / 確認します。|kakunin shimasu.|אבדוק|かくにんします = הבנתי. אבדוק.
+u この|kono|ה... הזה / 料理|ryōri|מנה|りょうり / ~ni / ピーナッツ|pīnattsu|בוטנים / ~wa / 入って|haitte|נמצא בתוך|はいって / いますか。|imasu ka?|(האם)? = יש בוטנים במנה הזאת?
+x この|kono|ה... הזה / 料理|ryōri|מנה|りょうり / ~wa / ~ikura / ~desuka = כמה עולה המנה הזאת? = שאלת על מחיר. על בוטנים במנה שואלים ピーナッツは入っていますか (פינאצו וה האיטה אימאס קה).
+n 入って|haitte|נמצא בתוך|はいって / いません。|imasen.|לא / ~daijobu / ~desu = אין בה. זה בסדר.
+t את האלרגיה הכי בטוח להראות בכתב. בלשונית "בטיול" יש כרטיס אלרגיה בטקסט גדול, שאפשר להראות למלצר או להשמיע לו.
+
+# בלי בשר חזיר
+w 豚肉|butaniku|בשר חזיר|ぶたにく ; 食べられません|taberaremasen|לא יכול לאכול|たべられません ; スープ|sūpu|מרק ; 野菜|yasai|ירקות|やさい
+n ご注文|go-chūmon|ההזמנה|ごちゅうもん / は。|wa?|(ו...?) = מה תרצו להזמין?
+u 豚肉|butaniku|בשר חזיר|ぶたにく / ~ga / 食べられません。|taberaremasen.|לא יכול לאכול|たべられません = אני לא יכול לאכול בשר חזיר.
+x 豚肉|butaniku|בשר חזיר|ぶたにく / ~o / ~kudasai = תן לי בשר חזיר. = ביקשת חזיר! כדי לומר שאתה לא אוכל חזיר אומרים 豚肉が食べられません (בוטאניקו גה טאבראראמאסן).
+n この|kono|ה... הזה / ラーメン|rāmen|ראמן / ~no / スープ|sūpu|מרק / ~wa / 豚骨|tonkotsu|עצמות חזיר|とんこつ / ~desu = המרק של הראמן הזה עשוי מעצמות חזיר.
+u じゃあ、|jā,|אז / 野菜|yasai|ירקות|やさい / ~no / ラーメン|rāmen|ראמן / ~wa / ~arimasuka = אז יש ראמן ירקות?
+x じゃあ、|jā,|אז / 豚骨|tonkotsu|טונקוצו|とんこつ / ~o / ~kudasai = אז תן לי טונקוצו. = טונקוצו עשוי מחזיר. אפשר לשאול על ראמן ירקות: 野菜のラーメンはありますか.
+n ~hai / こちら|kochira|זה / ~desu / 豚肉|butaniku|חזיר|ぶたにく / ~wa / 入って|haitte|בתוך|はいって / いません。|imasen.|אין = כן, זה. אין בו חזיר.
+t בשר חזיר מסתתר ביפן במקומות לא צפויים: מרק ראמן, גיוזה וקארי. כדאי לשאול גם על המרק, לא רק על הבשר.
+
+# משקאות ומילוי חוזר
+w ビール|bīru|בירה ; お茶|o-cha|תה|おちゃ ; おかわり|okawari|מילוי חוזר, עוד מנה ; 一つ|hitotsu|אחד|ひとつ
+n お飲み物|o-nomimono|משקאות|おのみもの / ~wa / どう|dō|מה / なさいますか。|nasaimasu ka?|תרצו (בנימוס)? = מה תרצו לשתות?
+u ビール|bīru|בירה / ~o / 一つ|hitotsu|אחת|ひとつ / ~to / お茶|o-cha|תה|おちゃ / ~o / 一つ|hitotsu|אחד|ひとつ / ~kudasai = בירה אחת ותה אחד, בבקשה.
+x ビール|bīru|בירה / ~wa / ~doko / ~desuka = איפה הבירה? = שאלת איפה. כדי להזמין אומרים ビールを一つください (בירו או היטוצו קודאסאי).
+n ~kashiko = בהחלט.
+u ~sumimasen / お茶|o-cha|תה|おちゃ / ~no / おかわり|okawari|מילוי חוזר / ~onegai = סליחה, עוד תה, בבקשה.
+x ~sumimasen / お茶|o-cha|תה|おちゃ / ~wa / 高い|takai|יקר|たかい / ~desu = סליחה, התה יקר. = אמרת שהתה יקר. כדי לבקש עוד אומרים おかわりお願いします (אוקאוואורי אונגאישימאס).
+n ~hai / ~dozo = כן, בבקשה.
+t בהרבה מסעדות ביפן תה ירוק ומים מוגשים בחינם, ואפשר לבקש おかわり. לפני ששותים יחד אומרים 乾杯 (קאנפאי), לחיים.
+
+# חריף? ולקרוא למלצר
+w 辛い|karai|חריף|からい ; 少し|sukoshi|קצת|すこし ; 辛くない|karakunai|לא חריף|からくない ; 甘口|amakuchi|מתון, לא חריף|あまくち
+n ~hai / ただいま。|tadaima.|מיד (אני בא) = כן, אני בא!
+u この|kono|ה... הזה / カレー|karē|קארי / ~wa / 辛い|karai|חריף|からい / ~desuka = הקארי הזה חריף?
+x この|kono|ה... הזה / カレー|karē|קארי / ~wa / 寒い|samui|קר|さむい / ~desuka = הקארי קר? = 寒い (סאמוי) זה קר, כמו מזג אוויר. חריף זה 辛い (קאראי).
+n 少し|sukoshi|קצת|すこし / 辛い|karai|חריף|からい / ~desu = קצת חריף.
+u 辛くない|karakunai|לא חריף|からくない / ~no / ~wa / ~arimasuka = יש משהו לא חריף?
+x 辛い|karai|חריף|からい / ~no / ~o / 十|jū|עשר|じゅう / ~kudasai = עשר מנות חריפות, בבקשה. = ביקשת עשר מנות חריפות. כדי לבקש משהו לא חריף אומרים 辛くないのはありますか.
+n ~hai / 甘口|amakuchi|מתון|あまくち / ~mo / あります。|arimasu.|יש = כן, יש גם גרסה מתונה.
+t כדי לקרוא למלצר ביפן אומרים בקול すみません (סומימאסן), או לוחצים על הפעמון שעל השולחן. לא מנופפים ולא שורקים.
+
+# חשבון נפרד ומזומן
+w 別々|betsubetsu|בנפרד|べつべつ ; 現金|genkin|מזומן|げんきん ; 領収書|ryōshūsho|קבלה|りょうしゅうしょ ; お釣り|o-tsuri|עודף|おつり
+n お会計|o-kaikei|החשבון|おかいけい / ~wa / ご一緒|go-issho|ביחד|ごいっしょ / ~desuka = החשבון ביחד?
+u 別々|betsubetsu|בנפרד|べつべつ / ~de / ~onegai = בנפרד, בבקשה.
+x 一緒|issho|ביחד|いっしょ / ~ni / 食べます。|tabemasu.|נאכל|たべます = נאכל ביחד. = אמרת שתאכלו ביחד. כדי לשלם בנפרד אומרים 別々でお願いします (בצובצו דה אונגאישימאס).
+n ~kashiko / お支払い|o-shiharai|התשלום|おしはらい / ~wa / 現金|genkin|מזומן|げんきん / ~desuka = בהחלט. התשלום במזומן?
+u ~hai / 現金|genkin|מזומן|げんきん / ~desu / 領収書|ryōshūsho|קבלה|りょうしゅうしょ / ~mo / ~onegai = כן, במזומן. וגם קבלה, בבקשה.
+x ~hai / 現金|genkin|מזומן|げんきん / ~o / ~kudasai = כן, תן לי מזומן. = ביקשת לקבל מזומן. כדי לומר שתשלם במזומן אומרים 現金です (גנקין דס).
+n こちら|kochira|הנה / お釣り|o-tsuri|העודף|おつり / ~to / 領収書|ryōshūsho|קבלה|りょうしゅうしょ / ~desu = הנה העודף והקבלה.
+t ביפן מניחים את הכסף על מגש קטן, וגם העודף חוזר על המגש. לא משאירים טיפ, וטיפ יכול אפילו להביך את הצוות.
+
+# מחכים לשולחן
+w 満席|manseki|מלא (אין מקומות)|まんせき ; どのくらい|dono kurai|כמה זמן ; 待ちます|machimasu|לחכות|まちます ; 二十分|nijuppun|עשרים דקות|にじゅっぷん
+n 申し訳ございません。|mōshiwake gozaimasen.|אנחנו מצטערים|もうしわけございません / 今|ima|כרגע|いま / 満席|manseki|מלא|まんせき / ~desu = מצטערים, כרגע הכול מלא.
+u どのくらい|dono kurai|כמה זמן / 待ちますか。|machimasu ka?|מחכים?|まちますか = כמה זמן צריך לחכות?
+x どのくらい|dono kurai|כמה / 食べますか。|tabemasu ka?|אוכלים?|たべますか = כמה אוכלים? = שאלת כמה אוכלים. על זמן המתנה שואלים どのくらい待ちますか (דונו קוראי מאצ'ימאס קה).
+n 二十分|nijuppun|עשרים דקות|にじゅっぷん / ぐらい|gurai|בערך / ~desu = בערך עשרים דקות.
+u じゃあ、|jā,|אז / 待ちます。|machimasu.|נחכה|まちます = אז נחכה.
+x じゃあ、|jā,|אז / 二十人|nijūnin|עשרים אנשים|にじゅうにん / ~desu = אז עשרים אנשים. = 二十人 (ניג'ונין) זה עשרים אנשים. כדי להסכים לחכות אומרים 待ちます (מאצ'ימאס).
+n こちら|kochira|כאן / ~ni / お名前|o-namae|השם|おなまえ / ~o / ~onegai = כתבו כאן את השם, בבקשה.
+t תור מחוץ למסעדה נחשב ביפן סימן טוב. מחכים בשקט, ולא שומרים מקום לחברים שעוד לא הגיעו.
+
+# מה פופולרי? מנה גדולה
+w 人気|ninki|פופולרי|にんき ; 定食|teishoku|ארוחת סט|ていしょく ; 大盛り|ōmori|מנה גדולה|おおもり ; 無料|muryō|בחינם|むりょう
+n メニュー|menyū|תפריט / ~dozo = הנה התפריט.
+u 人気|ninki|פופולרי|にんき / ~no / 料理|ryōri|מנה|りょうり / ~wa / 何|nan|מה|なん / ~desuka = מה המנה הפופולרית?
+x 人気|ninki|פופולרי|にんき / ~no / トイレ|toire|שירותים / ~wa / ~doko / ~desuka = איפה השירותים הפופולריים? = שאלת על שירותים. כדי לבקש המלצה אומרים 人気の料理は何ですか (נינקי נו ריורי וה נאן דס קה).
+n 唐揚げ|karaage|עוף מטוגן|からあげ / 定食|teishoku|ארוחת סט|ていしょく / ~desu = ארוחת סט של קאראאגה, עוף מטוגן.
+u じゃあ、|jā,|אז / それ|sore|את זה / ~o / 大盛り|ōmori|מנה גדולה|おおもり / ~de / ~onegai = אז את זה, במנה גדולה, בבקשה.
+x じゃあ、|jā,|אז / それ|sore|את זה / ~o / 一人|hitori|אדם אחד|ひとり / ~kudasai = אז תן לי את זה אדם אחד. = 一人 (היטורי) סופר אנשים. מנה גדולה מבקשים כך: 大盛りで (אומורי דה).
+n ~kashiko / ご飯|gohan|אורז|ごはん / ~no / おかわり|okawari|תוספת|おかわり / ~wa / 無料|muryō|בחינם|むりょう / ~desu = בהחלט. תוספת אורז בחינם.
+t בארוחת 定食 מקבלים מגש עם מנה עיקרית, אורז, מרק מיסו וירקות כבושים. את מרק המיסו שותים ישר מהקערה, בלי כף.
+
+# מחמאה ולקחת הביתה
+w おいしかった|oishikatta|היה טעים ; とても|totemo|מאוד ; 持ち帰り|mochikaeri|לקחת הביתה|もちかえり ; 箱|hako|קופסה|はこ
+n お味|o-aji|הטעם|おあじ / ~wa / いかがでしたか。|ikaga deshita ka?|איך היה? = איך היה האוכל?
+u とても|totemo|מאוד / おいしかった|oishikatta|היה טעים / ~desu = היה טעים מאוד.
+x とても|totemo|מאוד / 高かった|takakatta|היה יקר|たかかった / ~desu = היה יקר מאוד. = 高かった (טאקאקאטה) זה "היה יקר". כדי להחמיא אומרים おいしかったです (אויישיקאטה דס).
+n ~arigato = תודה רבה!
+u ~sumimasen / これ|kore|את זה / 持ち帰り|mochikaeri|לקחת הביתה|もちかえり / できますか。|dekimasu ka?|אפשר? = סליחה, אפשר לקחת את זה הביתה?
+x ~sumimasen / これ|kore|את זה / ~o / 食べて|tabete|לאכול|たべて / ~kudasai = סליחה, תאכל את זה. = ביקשת שהמלצר יאכל את זה. כדי לקחת הביתה שואלים 持ち帰りできますか (מוצ'יקאארי דקימאס קה).
+n ~hai / 箱|hako|קופסה|はこ / ~ni / 入れますね。|iremasu ne.|נכניס|いれますね = כן, נכניס לקופסה.
+t ביפן לא תמיד אפשר לקחת שאריות הביתה, בגלל כללי היגיינה. אם המסעדה מסרבת, זה לא אישי.
+
+# תפריט באנגלית ומזלג
+w 英語|eigo|אנגלית|えいご ; 写真|shashin|תמונה|しゃしん ; フォーク|fōku|מזלג ; お持ちします|omochi shimasu|אביא|おもちします
+n ~irasshai / 一名様|ichimei-sama|אדם אחד (בנימוס)|いちめいさま / ~desuka = ברוכים הבאים. אדם אחד?
+u ~hai / 英語|eigo|אנגלית|えいご / ~no / メニュー|menyū|תפריט / ~wa / ~arimasuka = כן. יש תפריט באנגלית?
+x ~hai / 英語|eigo|אנגלית|えいご / ~ga / 上手|jōzu|טוב, מוכשר|じょうず / ~desu = כן, אני טוב באנגלית. = אמרת שאתה מדבר אנגלית טוב. כדי לבקש תפריט באנגלית אומרים 英語のメニューはありますか.
+n すみません、|sumimasen,|מצטערים / 写真|shashin|תמונות|しゃしん / ~no / メニュー|menyū|תפריט / なら|nara|דווקא / あります。|arimasu.|יש = מצטערים, יש תפריט עם תמונות.
+u これ|kore|את זה / ~o / ~kudasai / フォーク|fōku|מזלג / ~mo / ~arimasuka = את זה, בבקשה. יש גם מזלג?
+x フォーク|fōku|מזלג / ~o / 食べます。|tabemasu.|אוכל|たべます = אני אוכל מזלג. = אמרת שתאכל מזלג. כדי לשאול אם יש מזלג אומרים フォークもありますか (פוקו מו ארימאס קה).
+n ~hai / お持ちします。|omochi shimasu.|אביא|おもちします = כן, אביא.
+t עם מקלות אכילה לא נועצים אותם זקופים באורז ולא מעבירים אוכל ממקלות למקלות. שני המנהגים קשורים לטקסי לוויה ביפן.
+
+@shopping|קניות|הקופה בחנות
+
+# תא מדידה
+r מוכרת בחנות בגדים
+w 試着|shichaku|מדידה|しちゃく ; 小さい|chiisai|קטן|ちいさい ; 大きい|ōkii|גדול|おおきい ; サイズ|saizu|מידה
+n ~irasshai = ברוכים הבאים.
+u ~sumimasen / これ|kore|את זה / 試着|shichaku|למדוד|しちゃく / しても|shitemo|לעשות (אם) / ~iidesuka = סליחה, אפשר למדוד את זה?
+x ~sumimasen / これ|kore|את זה / 食べても|tabetemo|לאכול (אם)|たべても / ~iidesuka = סליחה, אפשר לאכול את זה? = 食べても (טאבטמו) זה לאכול. למדוד זה 試着 (שיצ'אקו): 試着してもいいですか.
+n ~hai / ~dozo / こちら|kochira|כאן / ~desu = כן, בבקשה. כאן.
+u 少し|sukoshi|קצת|すこし / 小さい|chiisai|קטן|ちいさい / ~desu / 大きい|ōkii|גדולה|おおきい / サイズ|saizu|מידה / ~wa / ~arimasuka = קצת קטן. יש מידה גדולה יותר?
+x 少し|sukoshi|קצת|すこし / 安い|yasui|זול|やすい / ~desu = קצת זול. = 安い (יאסוי) זה זול. כדי לבקש מידה אחרת אומרים 大きいサイズはありますか (אוקי סאיזו וה ארימאס קה).
+n ~shosho = רגע אחד, המתן בבקשה.
+t לפני שנכנסים לתא מדידה ביפן חולצים נעליים. בחלק מהחנויות נותנים גם כיסוי פנים, כדי שהאיפור לא ילכלך את הבגדים.
+
+# פטור ממס לתיירים
+w 免税|menzei|פטור ממס|めんぜい ; 合計|gōkei|סך הכול|ごうけい ; 見せて|misete|להראות|みせて ; 手続き|tetsuzuki|הליך, טיפול|てつづき
+n 合計|gōkei|סך הכול|ごうけい / 一万五千円|ichiman gosen en|15,000 ין|いちまんごせんえん / ~desu = סך הכול 15,000 ין.
+u 免税|menzei|פטור ממס|めんぜい / ~wa / できますか。|dekimasu ka?|אפשר? = אפשר פטור ממס?
+x 税金|zeikin|מס|ぜいきん / ~o / ~kudasai = תן לי מס. = ביקשת "לקבל מס". כדי לשאול על פטור ממס אומרים 免税はできますか (מנזיי וה דקימאס קה).
+n ~hai / パスポート|pasupōto|דרכון / ~o / 見せて|misete|להראות|みせて / ~kudasai = כן. הראה בבקשה את הדרכון.
+u ~hai / ~dozo = כן, הנה.
+x ~hai / いただきます。|itadakimasu.|(אומרים לפני האוכל) = כן, בתיאבון. = いただきます (איטאדאקימאס) אומרים לפני האוכל. כשמגישים דרכון אומרים どうぞ (דוזו).
+n ~arigato / 手続き|tetsuzuki|הטיפול|てつづき / ~o / します。|shimasu.|נעשה = תודה. נטפל בזה.
+t מגישים ומקבלים דרכון, כרטיס או כסף בשתי ידיים. כללי הפטור ממס לתיירים ביפן משתנים מדי פעם, ולפי התכנון מנובמבר 2026 מקבלים את המס בחזרה ביציאה מיפן, אז כדאי לבדוק מה חל בזמן הנסיעה.
+
+# מיקוח בשוק
+r מוכר בדוכן בשוק
+w まけて|makete|תוריד מחיר ; 二つ|futatsu|שניים (פריטים)|ふたつ ; 買うから|kau kara|כי אקנה|かうから ; おまけ|omake|מתנה קטנה, תוספת
+n いらっしゃい！|irasshai!|בואו, בואו! / 安い|yasui|זול|やすい / よ！|yo!|(הדגשה) = בואו, בואו! זול!
+u これ|kore|את זה / 二つ|futatsu|שניים|ふたつ / 買うから|kau kara|כי אקנה|かうから / 少し|sukoshi|קצת|すこし / まけて|makete|תוריד מחיר / ~kudasai = אם אקנה שניים, תוריד קצת מהמחיר?
+x これ|kore|זה / ~wa / 高い|takai|יקר|たかい / ~desu = זה יקר. = אמרת רק שזה יקר. כדי לבקש הנחה אומרים 少しまけてください (סוקושי מאקטה קודאסאי).
+n じゃあ、|jā,|נו טוב / 二つ|futatsu|שניים|ふたつ / ~de / 千円|sen en|1,000 ין|せんえん / ~de / いいよ。|ii yo.|בסדר = נו טוב, שניים ב-1,000 ין.
+u やった！|yatta!|יש! / ~arigato = יש! תודה רבה.
+x ごちそうさまでした。|gochisōsama deshita.|תודה על הארוחה = תודה על הארוחה. = ごちそうさまでした (גוצ'יסוסאמה דשיטה) אומרים אחרי האוכל. כאן מודים: ありがとうございます.
+n これ、|kore,|והנה זה / おまけ|omake|מתנה קטנה / ね。|ne.|(בחום) = והנה, משהו קטן במתנה.
+t מיקוח לא נפוץ בחנויות רגילות ביפן. בשווקים ובדוכנים קטנים אפשר לבקש בנימוס, ולפעמים מקבלים おまけ (אומאקה), מתנה קטנה.
+
+# עטיפת מתנה
+w プレゼント|purezento|מתנה ; 包んで|tsutsunde|לעטוף|つつんで ; 一緒|issho|ביחד|いっしょ ; 一つずつ|hitotsu zutsu|כל אחד בנפרד|ひとつずつ
+n こちら|kochira|זה / ~de / よろしい|yoroshii|בסדר (בנימוס) / ~desuka = זה בסדר כך?
+u ~hai / プレゼント|purezento|מתנה / なので、|na node,|כי זה / 包んで|tsutsunde|לעטוף|つつんで / もらえますか。|moraemasu ka?|תוכלו? = כן. זו מתנה, תוכלו לעטוף?
+x プレゼント|purezento|מתנה / ~o / ~kudasai = תן לי מתנה. = ביקשת לקבל מתנה. כדי לבקש עטיפה אומרים 包んでもらえますか (צוצונדה מוראמאס קה).
+n ~kashiko / 一緒|issho|ביחד|いっしょ / ~ni / 包みますか。|tsutsumimasu ka?|לעטוף?|つつみますか = בהחלט. לעטוף ביחד?
+u ~iie / 一つずつ|hitotsu zutsu|כל אחד בנפרד|ひとつずつ / ~onegai = לא, כל אחד בנפרד, בבקשה.
+x ~iie / 一人|hitori|אדם אחד|ひとり / ~desu = לא, אדם אחד. = 一人 (היטורי) זה אדם אחד. כל אחד בנפרד זה 一つずつ (היטוצו זוצו).
+n ~shosho = רגע אחד, המתן בבקשה.
+t ביפן עוטפים מתנות בקפידה ומגישים אותן בשתי ידיים. לרוב לא פותחים מתנה מול מי שנתן אותה, אלא אם הוא מבקש.
+
+# קרם הגנה בדראגסטור
+r מוכרת בדראגסטור
+w 日焼け止め|hiyakedome|קרם הגנה|ひやけどめ ; 肌|hada|עור|はだ ; 弱い|yowai|חלש, רגיש|よわい ; どれ|dore|איזה (מכמה)
+n ~irasshai = ברוכים הבאים.
+u 日焼け止め|hiyakedome|קרם הגנה|ひやけどめ / ~wa / ~doko / ~desuka = איפה קרם ההגנה?
+x 日焼け止め|hiyakedome|קרם הגנה|ひやけどめ / ~wa / おいしい|oishii|טעים / ~desuka = קרם ההגנה טעים? = שאלת אם הוא טעים. על מקום שואלים どこですか (דוקו דס קה).
+n こちら|kochira|כאן / ~desu = כאן.
+u 肌|hada|עור|はだ / ~ga / 弱い|yowai|רגיש|よわい / ~desu / おすすめ|osusume|המומלץ / ~wa / どれ|dore|איזה / ~desuka = העור שלי רגיש. איזה מומלץ?
+x 肌|hada|עור|はだ / ~ga / 高い|takai|יקר|たかい / ~desu = העור יקר. = 高い (טאקאי) זה יקר. כדי לומר שהעור רגיש אומרים 肌が弱いです (האדה גה יוואי דס).
+n これ|kore|זה / ~wa / 子ども|kodomo|ילדים|こども / ~mo / 使えますよ。|tsukaemasu yo.|יכולים להשתמש|つかえますよ = את זה אפשר לשים גם לילדים.
+t בדראגסטור ביפן קונים תרופות, קוסמטיקה וגם חטיפים. חלק מהתרופות נמכרות רק אחרי שאלה קצרה של רוקח.
+
+# החלפת מוצר
+w 交換|kōkan|החלפה|こうかん ; レシート|reshīto|קבלה ; 色|iro|צבע|いろ ; 白|shiro|לבן|しろ
+n ~irasshai = ברוכים הבאים.
+u ~sumimasen / これ|kore|את זה / 交換|kōkan|להחליף|こうかん / できますか。|dekimasu ka?|אפשר? = סליחה, אפשר להחליף את זה?
+x ~sumimasen / これ|kore|את זה / ~o / もう一つ|mō hitotsu|עוד אחד|もうひとつ / ~kudasai = סליחה, עוד אחד מזה. = ביקשת עוד אחד. כדי להחליף שואלים 交換できますか (קוקאן דקימאס קה).
+n レシート|reshīto|קבלה / ~wa / ~arimasuka = יש לך קבלה?
+u ~hai / あります。|arimasu.|יש / 別|betsu|אחר|べつ / ~no / 色|iro|צבע|いろ / ~wa / ~arimasuka = כן, יש. יש צבע אחר?
+x ~iie / いりません。|irimasen.|לא צריך = לא, לא צריך. = いりません (אירימאסן) זה "לא צריך". הקבלה דרושה להחלפה, אז עונים はい、あります (האי, ארימאס).
+n 白|shiro|לבן|しろ / ~to / 黒|kuro|שחור|くろ / ~ga / あります。|arimasu.|יש = יש לבן ושחור.
+t ביפן מחליפים מוצר בדרך כלל רק עם קבלה ובאריזה המקורית. חנויות רבות מחליפות, אבל לא מחזירות כסף.
+
+# בחנות הנוחות
+r קופאי בקונביני
+w お弁当|o-bentō|קופסת אוכל|おべんとう ; 温めますか|atatamemasu ka|לחמם?|あたためますか ; お箸|o-hashi|מקלות אכילה|おはし ; ポイントカード|pointo kādo|כרטיס מועדון
+n お弁当|o-bentō|קופסת האוכל|おべんとう / 温めますか。|atatamemasu ka?|לחמם?|あたためますか = לחמם את הבנטו?
+u ~hai / ~onegai = כן, בבקשה.
+x ~hai / 冷たい|tsumetai|קר|つめたい / ~desu = כן, קר. = 冷たい (צומטאי) זה קר. כדי להסכים לחימום אומרים はい、お願いします.
+n お箸|o-hashi|מקלות אכילה|おはし / ~wa / ご利用|go-riyō|תשתמשו|ごりよう / ~desuka = תצטרך מקלות אכילה?
+u ~iie / ~daijobu / ~desu = לא, זה בסדר.
+x お箸|o-hashi|מקלות אכילה|おはし / ~o / 食べます。|tabemasu.|אוכל|たべます = אני אוכל את המקלות. = אמרת שתאכל את המקלות. כדי לסרב בנימוס אומרים いいえ、大丈夫です (איאה, דאיג'ובו דס).
+n ポイントカード|pointo kādo|כרטיס מועדון / ~wa / お持ち|o-mochi|יש לך (בנימוס)|おもち / ~desuka = יש לך כרטיס מועדון?
+u ~iie / ありません。|arimasen.|אין = לא, אין לי.
+x ~hai / ポイントカード|pointo kādo|כרטיס מועדון / ~o / ~kudasai = כן, תן לי כרטיס. = ביקשת לקבל כרטיס. אם אין לך פשוט אומרים いいえ、ありません (איאה, ארימאסן).
+n ありがとうございました。|arigatō gozaimashita.|תודה רבה = תודה רבה.
+t בקונביני ביפן אפשר לשלם חשבונות, לשלוח חבילות, להוציא כסף ולהדפיס. את מה שקונים לא אוכלים תוך כדי הליכה ברחוב.
+
+# מזכרות מתוקות
+w お土産|omiyage|מזכרת|おみやげ ; 日持ち|himochi|כמה זמן נשמר|ひもち ; 二週間|nishūkan|שבועיים|にしゅうかん ; 試食|shishoku|טעימה|ししょく
+n ~irasshai / 試食|shishoku|טעימה|ししょく / ~dozo = ברוכים הבאים. טעימה, בבקשה.
+u おいしい|oishii|טעים / ~desune = טעים!
+x まずい|mazui|לא טעים / ~desu = לא טעים. = まずい (מאזוי) אומר שזה לא טעים, וזה מאוד לא מנומס מול המוכר. אפשר לומר おいしいですね (אויישי דס נה).
+n お土産|omiyage|מזכרת|おみやげ / ~desuka = זה למזכרת?
+u ~hai / 日持ち|himochi|כמה זמן נשמר|ひもち / ~wa / どのくらい|dono kurai|כמה זמן / ~desuka = כן. כמה זמן זה נשמר?
+x ~hai / お土産|omiyage|מזכרת|おみやげ / ~wa / ~doko / ~desuka = כן. איפה המזכרת? = שאלת איפה. כדי לשאול כמה זמן זה נשמר אומרים 日持ちはどのくらいですか.
+n 二週間|nishūkan|שבועיים|にしゅうかん / ~desu / 十二個|jūniko|12 יחידות|じゅうにこ / 入り|iri|בקופסה|いり / ~ga / 人気|ninki|פופולרי|にんき / ~desu = שבועיים. הקופסה של 12 היא הכי פופולרית.
+t יפנים חוזרים מכל טיול עם お土産 (אומיאגה), ממתקים ארוזים בנפרד לחברים בעבודה. גם אורח שמגיע לבית מביא מתנה קטנה.
+
+# הכרטיס לא עובר
+w 使えません|tsukaemasen|לא עובד|つかえません ; だめ|dame|לא עובד, אסור ; ATM|ētīemu|כספומט ; コンビニ|konbini|חנות נוחות
+n 申し訳ございません。|mōshiwake gozaimasen.|מצטערים מאוד|もうしわけございません / この|kono|ה... הזה / カード|kādo|כרטיס / ~wa / 使えません。|tsukaemasen.|לא עובד|つかえません = מצטערים, הכרטיס הזה לא עובד.
+u じゃあ、|jā,|אז / 別|betsu|אחר|べつ / ~no / カード|kādo|כרטיס / ~de / ~onegai = אז בכרטיס אחר, בבקשה.
+x じゃあ、|jā,|אז / カード|kādo|כרטיס / ~o / ~kudasai = אז תן לי כרטיס. = ביקשת לקבל כרטיס. כדי לנסות כרטיס אחר אומרים 別のカードでお願いします (בצו נו קאדו דה אונגאישימאס).
+n すみません、|sumimasen,|מצטערים / これ|kore|זה / ~mo / だめ|dame|לא עובד / ~desu = מצטערים, גם זה לא עובד.
+u 近く|chikaku|קרוב|ちかく / ~ni / ATM|ētīemu|כספומט / ~wa / ~arimasuka = יש כספומט קרוב?
+x 近く|chikaku|קרוב|ちかく / ~ni / 警察|keisatsu|משטרה|けいさつ / ~wa / ~arimasuka = יש משטרה קרוב? = 警察 (קייסאצו) זו משטרה. כספומט זה ATM: 近くにATMはありますか.
+n コンビニ|konbini|חנות הנוחות / ~ni / あります。|arimasu.|יש = יש בחנות הנוחות.
+t כספומטים בחנויות הנוחות ובסניפי הדואר ביפן מקבלים בדרך כלל כרטיסים מחו"ל. בכספומטים של בנקים מקומיים לפעמים לא.
+
+@directions|כיוונים והתמצאות|אדם ברחוב
+
+# איפה התחנה?
+w 駅|eki|תחנה|えき ; まっすぐ|massugu|ישר ; 信号|shingō|רמזור|しんごう ; 渡って|watatte|לחצות|わたって
+n はい？|hai?|כן? = כן?
+u ~sumimasen / 駅|eki|התחנה|えき / ~wa / ~doko / ~desuka = סליחה, איפה התחנה?
+x ~sumimasen / 駅|eki|התחנה|えき / ~wa / ~ikura / ~desuka = סליחה, כמה עולה התחנה? = שאלת על מחיר. על מקום שואלים どこですか (דוקו דס קה).
+n この|kono|ה... הזה / 道|michi|רחוב|みち / ~o / まっすぐ|massugu|ישר / 行って、|itte,|ללכת, ואז|いって / 信号|shingō|הרמזור|しんごう / ~o / 渡って|watatte|לחצות|わたって / ~kudasai = לכו ישר ברחוב הזה, וחצו ברמזור.
+u まっすぐ|massugu|ישר / ~desune = ישר, נכון?
+x まっすぐ|massugu|ישר / ~wa / 高い|takai|יקר|たかい / ~desu = ישר זה יקר. = אמרת "ישר זה יקר". כדי לוודא שהבנת אומרים まっすぐですね (מאסוגו דס נה).
+n ~hai / 五分|gofun|חמש דקות|ごふん / ぐらい|gurai|בערך / ~desu = כן, בערך חמש דקות.
+t יפנים רבים ביישנים לדבר אנגלית, אבל ישמחו לעזור. すみません ומפה בטלפון עושים הרבה, ולפעמים ילוו אתכם עד המקום.
+
+# כמה זמן ברגל?
+w 歩いて|aruite|ברגל|あるいて ; 何分|nanpun|כמה דקות|なんぷん ; 遠い|tōi|רחוק|とおい ; 乗れます|noremasu|אפשר לעלות|のれます
+n ~hai / 何でしょう。|nan deshō?|במה אפשר לעזור?|なんでしょう = כן? במה אפשר לעזור?
+u 浅草寺|Sensōji|סנסו-ג'י|せんそうじ / ~made / 歩いて|aruite|ברגל|あるいて / 何分|nanpun|כמה דקות|なんぷん / ~desuka = כמה דקות ברגל עד סנסו-ג'י?
+x 浅草寺|Sensōji|סנסו-ג'י|せんそうじ / ~wa / 何時|nanji|איזו שעה|なんじ / ~desuka = סנסו-ג'י באיזו שעה? = 何時 (נאנג'י) שואל על שעה. על משך הליכה שואלים 歩いて何分ですか (אארוּאיטה נאנפון דס קה).
+n 十五分|jūgofun|רבע שעה|じゅうごふん / ぐらい|gurai|בערך / ~desu = בערך רבע שעה.
+u 遠い|tōi|רחוק|とおい / ~desune / バス|basu|אוטובוס / ~mo / ~arimasuka = רחוק. יש גם אוטובוס?
+x 寒い|samui|קר|さむい / ~desune = קר, נכון? = 寒い (סאמוי) זה קר. רחוק זה 遠い (טואי).
+n ~hai / あそこ|asoko|שם / ~kara / 乗れます。|noremasu.|אפשר לעלות|のれます = כן, אפשר לעלות משם.
+t בשער של מקדש נהוג להשתחוות קלות ולא ללכת באמצע השביל. האמצע שמור לאלים.
+
+# איפה אני במפה?
+w ここ|koko|כאן ; 地図|chizu|מפה|ちず ; 書いて|kaite|לסמן, לכתוב|かいて ; こっち|kotchi|לכיוון הזה
+n どう|dō|מה / しましたか。|shimashita ka?|קרה? = מה קרה?
+u この|kono|ה... הזה / 地図|chizu|מפה|ちず / ~de / ここ|koko|כאן / ~wa / ~doko / ~desuka = במפה הזאת, איפה אנחנו?
+x この|kono|ה... הזה / 地図|chizu|מפה|ちず / ~wa / ~ikura / ~desuka = כמה עולה המפה הזאת? = שאלת על מחיר. כדי לשאול איפה אתה במפה אומרים ここはどこですか (קוקו וה דוקו דס קה).
+n 今|ima|עכשיו|いま / ここ|koko|כאן / ~desu = עכשיו אנחנו כאן.
+u ここ|koko|כאן / ~ni / 書いて|kaite|לסמן|かいて / ~kudasai = סמן לי כאן, בבקשה.
+x ここ|koko|כאן / ~de / 食べて|tabete|לאכול|たべて / ~kudasai = תאכל כאן. = 食べて (טאבטה) זה לאכול. כדי לבקש סימון על המפה אומרים ここに書いてください (קוקו ני קאיטה קודאסאי).
+n ~hai / 駅|eki|התחנה|えき / ~wa / こっち|kotchi|לכיוון הזה / ~desu = כן. התחנה לכיוון הזה.
+t לרוב הרחובות ביפן אין שמות. כתובת מורכבת מרובע, בלוק ומספר בניין, ולכן מתמצאים לפי תחנות, ציוני דרך ומפות.
+
+# אפשר להשתמש בשירותים?
+w トイレ|toire|שירותים ; 借りても|karitemo|להשתמש, לשאול (אם)|かりても ; 奥|oku|בפנים, בסוף|おく
+n ~irasshai = ברוכים הבאים.
+u ~sumimasen / トイレ|toire|שירותים / ~o / 借りても|karitemo|להשתמש (אם)|かりても / ~iidesuka = סליחה, אפשר להשתמש בשירותים?
+x ~sumimasen / トイレ|toire|שירותים / ~o / 買っても|kattemo|לקנות (אם)|かっても / ~iidesuka = סליחה, אפשר לקנות את השירותים? = 買っても (קאטמו) זה לקנות. אומרים トイレを借りてもいいですか, מילולית "לשאול" את השירותים.
+n ~hai / ~dozo / 奥|oku|בסוף, בפנים|おく / ~ni / あります。|arimasu.|יש = כן, בבקשה. בסוף, בפנים.
+u ~arigato = תודה רבה.
+x ごちそうさまでした。|gochisōsama deshita.|תודה על הארוחה = תודה על הארוחה. = ごちそうさまでした אומרים אחרי האוכל. כאן מודים: ありがとうございます.
+n いいえ。|iie.|אין בעד מה = אין בעד מה.
+t בשירותים ביפן יש לפעמים נעלי בית מיוחדות. נועלים אותן רק בפנים, ולא יוצאים איתן החוצה.
+
+# הלכתי לאיבוד
+r שוטר בקובאן
+w 道に迷いました|michi ni mayoimashita|הלכתי לאיבוד|みちにまよいました ; 住所|jūsho|כתובת|じゅうしょ ; 近い|chikai|קרוב|ちかい ; 一緒|issho|ביחד|いっしょ
+n どう|dō|מה / しましたか。|shimashita ka?|קרה? = מה קרה?
+u 道に迷いました。|michi ni mayoimashita.|הלכתי לאיבוד|みちにまよいました = הלכתי לאיבוד.
+x 道|michi|דרך|みち / ~ga / 好き|suki|אוהב|すき / ~desu = אני אוהב את הדרך. = אמרת שאתה אוהב את הדרך. כשהולכים לאיבוד אומרים 道に迷いました (מיצ'י ני מאיוימאשיטה).
+n ホテル|hoteru|המלון / ~no / 住所|jūsho|כתובת|じゅうしょ / ~wa / ~arimasuka = יש לך את כתובת המלון?
+u ~hai / これ|kore|זאת / ~desu = כן, זאת.
+x ~iie / 住所|jūsho|כתובת|じゅうしょ / ~wa / 高い|takai|יקר|たかい / ~desu = לא, הכתובת יקרה. = 高い זה יקר. כדי להראות את הכתובת אומרים はい、これです (האי, קורה דס).
+n ~daijobu / ~desu / 近い|chikai|קרוב|ちかい / ~desu / 一緒|issho|ביחד|いっしょ / ~ni / 行きましょう。|ikimashō.|בואו נלך|いきましょう = בסדר, זה קרוב. בוא נלך ביחד.
+t ה-交番 (קובאן), תא משטרה קטן, נמצא כמעט בכל צומת גדול. השוטרים בו עוזרים במיוחד בהכוונה ובחפצים שאבדו.
+
+# תחנת האוטובוס בצד השני
+w バス停|basutei|תחנת אוטובוס|バスてい ; 反対側|hantaigawa|הצד השני|はんたいがわ ; 橋|hashi|גשר|はし ; 気をつけて|ki o tsukete|שמור על עצמך|きをつけて
+n はい？|hai?|כן? = כן?
+u ~sumimasen / 東京駅|Tōkyō-eki|תחנת טוקיו|とうきょうえき / 行き|yuki|לכיוון|ゆき / ~no / バス停|basutei|תחנת אוטובוס|バスてい / ~wa / ~doko / ~desuka = סליחה, איפה תחנת האוטובוס לתחנת טוקיו?
+x ~sumimasen / バス|basu|אוטובוס / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = סליחה, אני רוצה לקנות אוטובוס. = רצית לקנות אוטובוס. על תחנה שואלים バス停はどこですか (באסוטיי וה דוקו דס קה).
+n 反対側|hantaigawa|בצד השני|はんたいがわ / ~desu / あの|ano|ה... ההוא / 橋|hashi|גשר|はし / ~o / 渡って|watatte|לחצות|わたって / ~kudasai = בצד השני. חצה את הגשר ההוא.
+u 反対側|hantaigawa|הצד השני|はんたいがわ / ~desune / ~arigato = בצד השני, נכון? תודה.
+x 反対|hantai|נגד|はんたい / ~desu = אני נגד. = 反対 (האנטאי) לבד זה "נגד". הצד השני הוא 反対側 (האנטאיגאווה).
+n 気をつけて。|ki o tsukete.|שמור על עצמך|きをつけて = שמור על עצמך.
+t ביפן נוסעים בצד שמאל של הכביש, אז לפני שחוצים מסתכלים קודם ימינה. ולא חוצים באדום, גם כשהכביש ריק.
+
+# כניסה למקדש
+r עובד בכניסה למקדש
+w 入場料|nyūjōryō|דמי כניסה|にゅうじょうりょう ; 撮っても|tottemo|לצלם (אם)|とっても ; 庭|niwa|גן|にわ ; 建物|tatemono|בניין|たてもの
+n ~hai / ~dozo = כן, בבקשה.
+u 入場料|nyūjōryō|דמי הכניסה|にゅうじょうりょう / ~wa / ~ikura / ~desuka = כמה עולה הכניסה?
+x 入場料|nyūjōryō|דמי הכניסה|にゅうじょうりょう / ~wa / ~doko / ~desuka = איפה דמי הכניסה? = שאלת איפה. על מחיר שואלים いくらですか (איקורה דס קה).
+n 五百円|gohyaku en|500 ין|ごひゃくえん / ~desu / 五時|goji|השעה חמש|ごじ / ~made / ~desu = 500 ין. פתוח עד חמש.
+u 中|naka|בפנים|なか / ~de / 写真|shashin|תמונות|しゃしん / ~o / 撮っても|tottemo|לצלם (אם)|とっても / ~iidesuka = אפשר לצלם בפנים?
+x 中|naka|בפנים|なか / ~de / 寝ても|netemo|לישון (אם)|ねても / ~iidesuka = אפשר לישון בפנים? = 寝ても (נטמו) זה לישון. לצלם זה 撮っても (טוטמו).
+n 庭|niwa|בגן|にわ / ~wa / ~daijobu / ~desu / 建物|tatemono|הבניין|たてもの / ~no / 中|naka|בתוך|なか / ~wa / だめ|dame|אסור / ~desu = בגן זה בסדר. בתוך הבניין אסור.
+t במקדשים ובחלק מהמוזיאונים ביפן אסור לצלם בפנים. שלט עם מצלמה ו-X אומר אסור, ואם לא בטוחים פשוט שואלים.
+
+# שמאלה בפינה השנייה
+w 角|kado|פינה|かど ; 二つ目|futatsume|השני|ふたつめ ; 曲がって|magatte|לפנות|まがって ; 目印|mejirushi|סימן היכר|めじるし
+n はい？|hai?|כן? = כן?
+u ~sumimasen / 郵便局|yūbinkyoku|סניף הדואר|ゆうびんきょく / ~wa / ~doko / ~desuka = סליחה, איפה הדואר?
+x ~sumimasen / 郵便局|yūbinkyoku|סניף הדואר|ゆうびんきょく / ~ni / 住みたい|sumitai|רוצה לגור|すみたい / ~desu = סליחה, אני רוצה לגור בדואר. = 住みたい (סומיטאי) זה רוצה לגור. על מקום שואלים どこですか.
+n 二つ目|futatsume|השנייה|ふたつめ / ~no / 角|kado|פינה|かど / ~o / 左|hidari|שמאלה|ひだり / ~ni / 曲がって|magatte|לפנות|まがって / ~kudasai = בפינה השנייה פנה שמאלה.
+u 二つ目|futatsume|השנייה|ふたつめ / ~no / 角|kado|פינה|かど / ~o / 左|hidari|שמאלה|ひだり / ~desune = בפינה השנייה שמאלה, נכון?
+x 二つ目|futatsume|השנייה|ふたつめ / ~no / 角|kado|פינה|かど / ~o / 右|migi|ימינה|みぎ / ~desune = בפינה השנייה ימינה, נכון? = 右 (מיגי) זה ימין. אמרו לך 左 (הידארי), שמאל.
+n そうです。|sō desu.|נכון / 赤い|akai|אדומה|あかい / ポスト|posuto|תיבת דואר / ~ga / 目印|mejirushi|הסימן|めじるし / ~desu = נכון. תיבת הדואר האדומה היא הסימן.
+t תיבות הדואר ביפן אדומות, וסניפי הדואר מסומנים בסמל 〒. בכספומט של הדואר אפשר בדרך כלל למשוך כסף עם כרטיס זר.
+
+# חנות הנוחות הקרובה
+w 一番|ichiban|הכי|いちばん ; 隣|tonari|ליד, צמוד|となり ; ビル|biru|בניין ; 白い|shiroi|לבן|しろい
+n はい？|hai?|כן? = כן?
+u この|kono|ה... הזה / 辺|hen|אזור|へん / ~de / 一番|ichiban|הכי|いちばん / 近い|chikai|קרוב|ちかい / コンビニ|konbini|חנות נוחות / ~wa / ~doko / ~desuka = איפה חנות הנוחות הכי קרובה כאן?
+x 一番|ichiban|הכי|いちばん / 高い|takai|יקר|たかい / コンビニ|konbini|חנות נוחות / ~wa / ~doko / ~desuka = איפה חנות הנוחות הכי יקרה? = 高い (טאקאי) זה יקר. קרוב זה 近い (צ'יקאי).
+n あの|ano|ה... ההוא / ビル|biru|בניין / ~no / 隣|tonari|ליד|となり / ~desu = ליד הבניין ההוא.
+u あの|ano|ה... ההוא / 白い|shiroi|לבן|しろい / ビル|biru|בניין / ~desuka = הבניין הלבן ההוא?
+x あの|ano|ה... ההוא / 白い|shiroi|לבן|しろい / 犬|inu|כלב|いぬ / ~desuka = הכלב הלבן ההוא? = 犬 (אינו) זה כלב. בניין זה ビル (בירו).
+n ~hai / そうです。|sō desu.|נכון = כן, נכון.
+t כמעט אין פחי אשפה ברחובות ביפן. שומרים את האשפה בשקית וזורקים אותה בקונביני או במלון, לפי ההפרדה שעל הפחים.
+
+# באיזו קומה בכלבו?
+r מודיעין בכלבו
+w 売り場|uriba|מחלקה|うりば ; 地下|chika|מרתף|ちか ; 何階|nangai|באיזו קומה|なんがい ; エスカレーター|esukarētā|מדרגות נעות
+n ~irasshai = ברוכים הבאים.
+u 食品|shokuhin|מזון|しょくひん / 売り場|uriba|מחלקה|うりば / ~wa / 何階|nangai|באיזו קומה|なんがい / ~desuka = באיזו קומה מחלקת המזון?
+x 食品|shokuhin|מזון|しょくひん / 売り場|uriba|מחלקה|うりば / ~wa / 何人|nannin|כמה אנשים|なんにん / ~desuka = כמה אנשים במחלקת המזון? = 何人 (נאנין) שואל על אנשים. על קומה שואלים 何階ですか (נאנגאי דס קה).
+n 地下|chika|מרתף|ちか / 一階|ikkai|קומה אחת|いっかい / ~desu = בקומת המרתף הראשונה.
+u エスカレーター|esukarētā|מדרגות נעות / ~wa / ~doko / ~desuka = איפה המדרגות הנעות?
+x エスカレーター|esukarētā|מדרגות נעות / ~o / ~kudasai = תן לי מדרגות נעות. = ביקשת לקבל מדרגות נעות. על מקום שואלים どこですか (דוקו דס קה).
+n あちら|achira|שם / ~desu = שם.
+t על מדרגות נעות עומדים בצד אחד ומשאירים את השני למי שממהר. בטוקיו עומדים בצד שמאל ובאוסקה בצד ימין.
+
+@numbers|מספרים, מחירים ושעות|מוכרת בחנות
+
+# כמה זה עולה?
+w 千|sen|אלף|せん ; 五百|gohyaku|חמש מאות|ごひゃく ; 全部|zenbu|הכול|ぜんぶ ; 三千|sanzen|שלושת אלפים|さんぜん
+n ~irasshai = ברוכים הבאים.
+u これ|kore|זה / ~wa / ~ikura / ~desuka = כמה זה עולה?
+x これ|kore|זה / ~wa / 何時|nanji|איזו שעה|なんじ / ~desuka = באיזו שעה זה? = 何時 (נאנג'י) שואל על שעה. על מחיר שואלים いくら (איקורה).
+n 千五百円|sen gohyaku en|1,500 ין|せんごひゃくえん / ~desu = 1,500 ין.
+u 全部|zenbu|הכול|ぜんぶ / ~de / ~ikura / ~desuka = כמה הכול ביחד?
+x 全部|zenbu|הכול|ぜんぶ / ~de / 何人|nannin|כמה אנשים|なんにん / ~desuka = כמה אנשים בסך הכול? = 何人 (נאנין) שואל על אנשים. על סכום שואלים 全部でいくらですか (זנבו דה איקורה דס קה).
+n 全部|zenbu|הכול|ぜんぶ / ~de / 三千円|sanzen en|3,000 ין|さんぜんえん / ~desu = הכול ביחד 3,000 ין.
+t המחיר על המדף ביפן מוצג לפעמים עם מס ולפעמים בלעדיו. אם כתוב 税込 (זייקומי), המס כבר כלול.
+
+# מה השעה?
+r עובר אורח
+w 何時|nanji|מה השעה|なんじ ; 三時|sanji|השעה שלוש|さんじ ; 半|han|חצי|はん ; 四時|yoji|השעה ארבע|よじ
+n はい？|hai?|כן? = כן?
+u ~sumimasen / 今|ima|עכשיו|いま / 何時|nanji|מה השעה|なんじ / ~desuka = סליחה, מה השעה עכשיו?
+x ~sumimasen / 今|ima|עכשיו|いま / ~ikura / ~desuka = סליחה, כמה זה עכשיו? = いくら (איקורה) שואל על מחיר. על השעה שואלים 今何時ですか (אימה נאנג'י דס קה).
+n 三時|sanji|השעה שלוש|さんじ / 半|han|וחצי|はん / ~desu = שלוש וחצי.
+u 美術館|bijutsukan|המוזיאון לאמנות|びじゅつかん / ~wa / 四時|yoji|ארבע|よじ / ~made / ~desuka = המוזיאון פתוח עד ארבע?
+x 美術館|bijutsukan|המוזיאון לאמנות|びじゅつかん / ~wa / 四人|yonin|ארבעה אנשים|よにん / ~desuka = המוזיאון ארבעה אנשים? = 四人 (יונין) זה ארבעה אנשים. עד ארבע זה 四時まで (יוג'י מאדה).
+n ~hai / 急いで|isoide|מהר|いそいで / ~kudasai = כן. מהר!
+t השעה ארבע היא 四時 (יוג'י) ותשע היא 九時 (קוג'י). 四 ו-九 נחשבים מספרים של מזל רע, כי אפשר לקרוא אותם כמו "מוות" ו"סבל", ולכן בחלק מהמלונות אין חדר 4.
+
+# שלוש לחמניות
+r מוכר במאפייה
+w メロンパン|meronpan|לחמניית מלון ; 三つ|mittsu|שלושה (פריטים)|みっつ ; 二つ|futatsu|שניים (פריטים)|ふたつ ; 五つ|itsutsu|חמישה (פריטים)|いつつ
+n ~irasshai = ברוכים הבאים.
+u メロンパン|meronpan|לחמניית מלון / ~o / 三つ|mittsu|שלוש|みっつ / ~kudasai = שלוש לחמניות מלון, בבקשה.
+x メロンパン|meronpan|לחמניית מלון / ~o / 三人|sannin|שלושה אנשים|さんにん / ~kudasai = לחמניית מלון לשלושה אנשים. = 三人 (סאנין) סופר אנשים. פריטים סופרים עם つ: 三つ (מיצו).
+n ~kashiko / ほか|hoka|עוד, אחר / ~ni / 何か|nanika|משהו|なにか / ~arimasuka = בהחלט. עוד משהו?
+u あんパン|anpan|לחמנייה עם ממרח שעועית / ~mo / 二つ|futatsu|שתיים|ふたつ / ~onegai = גם שתי לחמניות אנפאן, בבקשה.
+x あんパン|anpan|לחמנייה עם ממרח שעועית / ~mo / 二時|niji|השעה שתיים|にじ / ~onegai = גם אנפאן בשעה שתיים. = 二時 (ניג'י) זו השעה שתיים. שתיים (פריטים) זה 二つ (פוטאצו).
+n 全部|zenbu|הכול|ぜんぶ / ~de / 五つ|itsutsu|חמש|いつつ / ~desune = סך הכול חמש, נכון?
+t ספירה עם つ מתאימה כמעט לכל חפץ: ひとつ, ふたつ, みっつ, よっつ, いつつ (היטוצו, פוטאצו, מיצו, יוצו, איצוצו). גם כשיש מילת ספירה מיוחדת, המוכרים יבינו.
+
+# תאריך: 5 בדצמבר
+r פקיד בדלפק ההזמנות
+w 十二月|jūnigatsu|דצמבר|じゅうにがつ ; 五日|itsuka|החמישי בחודש|いつか ; 土曜日|doyōbi|שבת|どようび ; いつ|itsu|מתי
+n ご予約|go-yoyaku|ההזמנה|ごよやく / ~wa / いつ|itsu|מתי / ~desuka = לאיזה תאריך ההזמנה?
+u 十二月|jūnigatsu|דצמבר|じゅうにがつ / 五日|itsuka|החמישי|いつか / ~desu = 5 בדצמבר.
+x 十二月|jūnigatsu|דצמבר|じゅうにがつ / 五人|gonin|חמישה אנשים|ごにん / ~desu = דצמבר, חמישה אנשים. = 五人 (גונין) זה חמישה אנשים. היום החמישי בחודש הוא 五日 (איצוקה).
+n 十二月|jūnigatsu|דצמבר|じゅうにがつ / 五日|itsuka|החמישי|いつか / ~wa / 土曜日|doyōbi|שבת|どようび / ~desune = 5 בדצמבר, זה יום שבת, נכון?
+u ~hai / そうです。|sō desu.|נכון = כן, נכון.
+x ~iie / 月曜日|getsuyōbi|יום שני|げつようび / ~desu = לא, יום שני. = 5 בדצמבר 2026 הוא באמת שבת, אז עונים はい、そうです (האי, סו דס).
+n ~kashiko = בהחלט.
+t הימים הראשונים בחודש נשמעים אחרת: 一日 (צויטאצ'י), 二日 (פוצוקה), 三日 (מיקה), 五日 (איצוקה), 十日 (טוקה). מה-11 רוב התאריכים פשוטים: מספר ועוד 日 (ניצ'י).
+
+# מספר טלפון
+r פקידה בקבלה
+w 電話番号|denwa bangō|מספר טלפון|でんわばんごう ; もう一度|mō ichido|עוד פעם|もういちど ; ゆっくり|yukkuri|לאט ; ゼロ|zero|אפס
+n 電話番号|denwa bangō|מספר הטלפון|でんわばんごう / ~o / 教えて|oshiete|לומר|おしえて / ~kudasai = מה מספר הטלפון שלך?
+u ~sumimasen / もう一度|mō ichido|עוד פעם|もういちど / ゆっくり|yukkuri|לאט / ~onegai = סליחה, עוד פעם לאט, בבקשה.
+x ~sumimasen / 電話|denwa|טלפון|でんわ / ~o / ~kudasai = סליחה, תן לי טלפון. = ביקשת לקבל טלפון. כשלא הבנת אומרים もう一度ゆっくりお願いします (מו איצ'ידו יוקורי אונגאישימאס).
+n 電話番号|denwa bangō|מספר הטלפון|でんわばんごう / ~desu = את מספר הטלפון.
+u ゼロ|zero|אפס / 九|kyū|תשע|きゅう / ゼロ|zero|אפס / ~no / 一|ichi|אחת|いち / 二|ni|שתיים|に / 三|san|שלוש|さん / 四|yon|ארבע|よん / ~desu = 090-1234.
+x 九十|kyūjū|תשעים|きゅうじゅう / 円|en|ין|えん / ~desu = 90 ין. = 九十円 זה 90 ין. במספר טלפון אומרים ספרה אחרי ספרה, ואת המקף קוראים の (נו).
+n ~hai / ~arigato = כן, תודה רבה.
+t במספרי טלפון יפנים אומרים ספרה אחרי ספרה, ואת המקף קוראים の. את 4 אומרים よん (יון) ואת 7 なな (נאנה), כי שיג'י נשמעים כמו מספרי מזל רע.
+
+# צלחות בסושי
+r מלצר במסעדת סושי
+w お皿|o-sara|צלחת|おさら ; 何枚|nanmai|כמה (חפצים שטוחים)|なんまい ; 六枚|rokumai|שש (חפצים שטוחים)|ろくまい ; 千二百|sen nihyaku|אלף מאתיים|せんにひゃく
+n お会計|o-kaikei|החשבון|おかいけい / ~desuka = החשבון?
+u ~hai / ~onegai = כן, בבקשה.
+x ~hai / いただきます。|itadakimasu.|(אומרים לפני האוכל) = כן, בתיאבון. = いただきます (איטאדאקימאס) אומרים לפני האוכל. כדי לבקש חשבון אומרים はい、お願いします.
+n お皿|o-sara|הצלחות|おさら / ~wa / 何枚|nanmai|כמה|なんまい / ~desuka = כמה צלחות?
+u 六枚|rokumai|שש|ろくまい / ~desu = שש.
+x 六本|roppon|שישה (חפצים ארוכים)|ろっぽん / ~desu = שישה בקבוקים. = 本 (הון) סופר דברים ארוכים. צלחות סופרים עם 枚 (מאי): 六枚 (רוקומאי).
+n 六枚|rokumai|שש צלחות|ろくまい / ~de / 千二百円|sen nihyaku en|1,200 ין|せんにひゃくえん / ~desu = שש צלחות, 1,200 ין.
+t בסושי על מסוע, צבע הצלחת מסמן את המחיר. לא מחזירים צלחת למסוע אחרי שלוקחים אותה.
+
+# שעות פתיחה ויום סגור
+r מסעדה (בטלפון)
+w 開きますか|akimasu ka|נפתח?|あきますか ; 月曜日|getsuyōbi|יום שני|げつようび ; 定休日|teikyūbi|יום סגור קבוע|ていきゅうび ; 火曜日|kayōbi|יום שלישי|かようび
+n ~hai / さくら|Sakura|סאקורה (שם המסעדה) / ~desu = כן, סאקורה.
+u ~sumimasen / 明日|ashita|מחר|あした / ~wa / 何時|nanji|איזו שעה|なんじ / ~kara / 開きますか。|akimasu ka?|נפתח?|あきますか = סליחה, מאיזו שעה אתם פותחים מחר?
+x ~sumimasen / 明日|ashita|מחר|あした / ~wa / ~ikura / ~desuka = סליחה, כמה זה מחר? = いくら (איקורה) זה מחיר. על שעת פתיחה שואלים 何時から開きますか (נאנג'י קארה אקימאס קה).
+n すみません、|sumimasen,|מצטערים / 月曜日|getsuyōbi|יום שני|げつようび / ~wa / 定休日|teikyūbi|יום סגור|ていきゅうび / ~desu = מצטערים, בימי שני אנחנו סגורים.
+u じゃあ、|jā,|אז / 火曜日|kayōbi|יום שלישי|かようび / は？|wa?|ו...? = אז מה עם יום שלישי?
+x じゃあ、|jā,|אז / 月曜日|getsuyōbi|ביום שני|げつようび / ~ni / 行きます。|ikimasu.|אבוא|いきます = אז אבוא ביום שני. = ביום שני סגור. אפשר לשאול על יום אחר: 火曜日は？ (קאיובי וה?)
+n 火曜日|kayōbi|יום שלישי|かようび / ~wa / 十一時|jūichiji|השעה 11|じゅういちじ / ~kara / ~desu = ביום שלישי מ-11.
+t מסעדות וחנויות קטנות ביפן סגורות יום אחד קבוע בשבוע, 定休日 (טייקיובי). מוזיאונים רבים סגורים בימי שני.
+
+# שעה או שעות?
+r נהג מונית
+w 何時間|nanjikan|כמה שעות|なんじかん ; 一時間|ichijikan|שעה אחת|いちじかん ; 二時|niji|השעה שתיים|にじ ; 着きますか|tsukimasu ka|נגיע?|つきますか
+n どちら|dochira|לאן / ~made / ~desuka = לאן?
+u 空港|kūkō|נמל התעופה|くうこう / ~made / 何時間|nanjikan|כמה שעות|なんじかん / かかりますか。|kakarimasu ka?|לוקח? = כמה שעות לוקח עד שדה התעופה?
+x 空港|kūkō|נמל התעופה|くうこう / ~made / 何時|nanji|איזו שעה|なんじ / ~desuka = עד שדה התעופה באיזו שעה? = 何時 (נאנג'י) שואל "באיזו שעה". על משך שואלים 何時間 (נאנג'יקאן), כמה שעות.
+n 一時間|ichijikan|שעה|いちじかん / 半|han|וחצי|はん / ぐらい|gurai|בערך / ~desu = בערך שעה וחצי.
+u 二時|niji|בשעה שתיים|にじ / ~ni / 着きますか。|tsukimasu ka?|נגיע?|つきますか = נגיע בשתיים?
+x 二時間|nijikan|שעתיים|にじかん / ~ni / 着きますか。|tsukimasu ka?|נגיע?|つきますか = נגיע שעתיים? = 二時間 (ניג'יקאן) זה משך של שעתיים. השעה שתיים היא 二時 (ניג'י).
+n ~hai / ~daijobu / ~desu = כן, זה בסדר.
+t 時 (ג'י) זו שעה על השעון, ו-時間 (ג'יקאן) זה משך זמן. ביפן מקפידים מאוד על זמנים, ואיחור של כמה דקות נחשב חוסר נימוס.
+
+# עשרת אלפים ועודף
+r קופאית
+w 一万円|ichiman en|10,000 ין|いちまんえん ; 二千|nisen|אלפיים|にせん ; 八千|hassen|שמונת אלפים|はっせん ; お釣り|o-tsuri|עודף|おつり
+n 二千円|nisen en|2,000 ין|にせんえん / ~desu = 2,000 ין.
+u 一万円|ichiman en|10,000 ין|いちまんえん / ~de / ~iidesuka = אפשר עם 10,000 ין?
+x 一万人|ichiman nin|עשרת אלפים אנשים|いちまんにん / ~desu = עשרת אלפים אנשים. = 人 (נין) סופר אנשים. השטר הוא 一万円 (איצ'ימאן אן).
+n ~hai / 八千円|hassen en|8,000 ין|はっせんえん / ~no / お釣り|o-tsuri|עודף|おつり / ~desu = כן. הנה עודף של 8,000 ין.
+u ~arigato = תודה רבה.
+x 八百円|happyaku en|800 ין|はっぴゃくえん / ~desuka = 800 ין? = העודף הוא 八千円 (האסן אן), 8,000. 八百 (האפיאקו) זה 800.
+n ありがとうございました。|arigatō gozaimashita.|תודה רבה = תודה רבה.
+t ביפנית סופרים בעשרות אלפים: 万 (מאן) הוא 10,000, ולכן 20,000 הוא 二万 (נימאן). השטר הגדול ביפן הוא 一万円.
+
+# שולחן לארבעה בשבע
+r מארחת במסעדה (בטלפון)
+w 四人|yonin|ארבעה אנשים|よにん ; 七時|shichiji|השעה שבע|しちじ ; 七時半|shichiji han|שבע וחצי|しちじはん ; 予約|yoyaku|הזמנה|よやく
+n お電話|o-denwa|השיחה|おでんわ / ありがとうございます。|arigatō gozaimasu.|תודה על = תודה שהתקשרת.
+u 今晩|konban|הערב|こんばん / 七時|shichiji|בשבע|しちじ / ~ni / 四人|yonin|ארבעה אנשים|よにん / ~de / 予約|yoyaku|הזמנה|よやく / できますか。|dekimasu ka?|אפשר? = אפשר להזמין לארבעה, הערב בשבע?
+x 今晩|konban|הערב|こんばん / 七時|shichiji|בשבע|しちじ / ~ni / 四つ|yottsu|ארבעה (פריטים)|よっつ / ~kudasai = הערב בשבע, ארבעה דברים. = 四つ (יוצו) סופר חפצים. אנשים סופרים 四人 (יונין).
+n 七時|shichiji|בשבע|しちじ / ~wa / 満席|manseki|מלא|まんせき / ~desu / 七時半|shichiji han|שבע וחצי|しちじはん / ~wa / いかがですか。|ikaga desu ka?|מה דעתך? = בשבע מלא. מה עם שבע וחצי?
+u ~hai / 七時半|shichiji han|שבע וחצי|しちじはん / ~de / ~onegai = כן, שבע וחצי, בבקשה.
+x ~hai / 七時間|nanajikan|שבע שעות|ななじかん / ~de / ~onegai = כן, שבע שעות. = 七時間 (נאנאג'יקאן) זה שבע שעות. שבע וחצי זה 七時半 (שיצ'יג'י האן).
+n お名前|o-namae|השם|おなまえ / ~o / ~onegai = השם, בבקשה.
+t אם מאחרים להזמנה ביפן, מתקשרים להודיע. למסעדות קטנות יש מעט שולחנות, ושולחן ריק בגלל ביטול ברגע האחרון הוא הפסד אמיתי בשבילן.
+
+@smalltalk|היכרות ושיחת חולין|יפנית שיושבת לידך
+
+# מאיפה אתה?
+w どちら|dochira|מאיפה (בנימוס) ; イスラエル|Isuraeru|ישראל ; 来ました|kimashita|באתי|きました ; 初めまして|hajimemashite|נעים מאוד (בפגישה ראשונה)|はじめまして
+n こんにちは。|konnichiwa.|שלום / どちら|dochira|מאיפה / ~kara / ~desuka = שלום. מאיפה אתה?
+u イスラエル|Isuraeru|ישראל / ~kara / 来ました。|kimashita.|באתי|きました = באתי מישראל.
+x イスラエル|Isuraeru|ישראל / ~ni / 行きたい|ikitai|רוצה לנסוע|いきたい / ~desu = אני רוצה לנסוע לישראל. = אמרת שאתה רוצה לנסוע לישראל. מאיפה באת: イスラエルから来ました (איסוראארו קארה קימאשיטה).
+n へえ！|hē!|וואו! / 遠い|tōi|רחוק|とおい / ~desune = וואו! רחוק.
+u 初めまして。|hajimemashite.|נעים מאוד|はじめまして / ダン|Dan|דן / ~desu / よろしく|yoroshiku|נעים להכיר / ~onegai = נעים מאוד, אני דן. נעים להכיר.
+x さようなら。|sayōnara.|להתראות = להתראות. = さようなら (סאיונארה) זו פרידה. בהיכרות אומרים 初めまして (האג'ימאמאשיטה).
+n 初めまして。|hajimemashite.|נעים מאוד|はじめまして / ゆき|Yuki|יוקי / ~desu = נעים מאוד, אני יוקי.
+t בהיכרות ביפן משתחווים קלות במקום לחיצת יד. מוסיפים さん (סאן) אחרי השם של אחרים, אבל אף פעם לא אחרי השם שלך.
+
+# מזג האוויר
+w 暑い|atsui|חם|あつい ; 本当に|hontō ni|ממש, באמת|ほんとうに ; 雨|ame|גשם|あめ ; 傘|kasa|מטריה|かさ
+n 今日|kyō|היום|きょう / ~wa / 暑い|atsui|חם|あつい / ~desune = חם היום, נכון?
+u そうですね。|sō desu ne.|באמת / 本当に|hontō ni|ממש|ほんとうに / 暑い|atsui|חם|あつい / ~desu = באמת. ממש חם.
+x 暑い|atsui|חם|あつい / ~o / ~kudasai = תן לי חם. = ביקשת לקבל "חם". בשיחת חולין מסכימים: そうですね (סו דס נה).
+n 明日|ashita|מחר|あした / ~wa / 雨|ame|גשם|あめ / らしい|rashii|כנראה / ~desu = מחר כנראה ירד גשם.
+u じゃあ、|jā,|אז / 傘|kasa|מטריה|かさ / ~ga / 要りますね。|irimasu ne.|צריך, נכון?|いりますね = אז צריך מטריה.
+x じゃあ、|jā,|אז / 傘|kasa|מטריה|かさ / ~wa / おいしい|oishii|טעים / ~desu = אז המטריה טעימה. = אמרת שהמטריה טעימה. אפשר לומר 傘が要りますね (קאסה גה אירימאס נה).
+n そうですね。|sō desu ne.|נכון = נכון.
+t שיחת חולין ביפן מתחילה הרבה פעמים במזג האוויר. התשובה הנפוצה היא そうですね (סו דס נה), "באמת", שמראה הסכמה והקשבה.
+
+# עבודה ותחביבים
+w 仕事|shigoto|עבודה|しごと ; 趣味|shumi|תחביב|しゅみ ; 写真|shashin|צילום|しゃしん ; 撮りたい|toritai|רוצה לצלם|とりたい
+n お仕事|o-shigoto|העבודה|おしごと / ~wa / 何|nan|מה|なん / ~desuka = במה אתה עובד?
+u エンジニア|enjinia|מהנדס / ~desu = אני מהנדס.
+x 仕事|shigoto|עבודה|しごと / ~wa / ~ikura / ~desuka = כמה עולה עבודה? = שאלת על מחיר. על עבודה עונים עם המקצוע: エンジニアです (אנג'יניה דס).
+n 趣味|shumi|תחביב|しゅみ / ~wa / 何|nan|מה|なん / ~desuka = מה התחביב שלך?
+u 写真|shashin|צילום|しゃしん / ~desu / お寺|o-tera|מקדשים|おてら / ~o / 撮りたい|toritai|רוצה לצלם|とりたい / ~desu = צילום. אני רוצה לצלם מקדשים.
+x 写真|shashin|תמונה|しゃしん / ~o / ~kudasai = תן לי תמונה. = ביקשת לקבל תמונה. על תחביב עונים 写真です (שאשין דס).
+n いいですね！|ii desu ne!|נהדר! / 京都|Kyōto|קיוטו|きょうと / ~ga / おすすめ|osusume|מומלץ / ~desu = נהדר! אני ממליצה על קיוטו.
+t בשיחה ראשונה ביפן לא שואלים על משכורת, גיל או דת. תחביבים, אוכל וטיולים הם נושאים בטוחים.
+
+# כשמחמיאים לך
+w 上手|jōzu|טוב, מוכשר|じょうず ; まだまだ|madamada|עוד רחוק (צניעות) ; 勉強|benkyō|לימוד|べんきょう ; 一ヶ月|ikkagetsu|חודש אחד|いっかげつ
+n 日本語|nihongo|יפנית|にほんご / 上手|jōzu|טוב|じょうず / ~desune = היפנית שלך טובה!
+u いえいえ、|ieie,|ממש לא / まだまだ|madamada|עוד רחוק / ~desu = ממש לא, עוד רחוק.
+x ~hai / 上手|jōzu|טוב|じょうず / ~desu = כן, אני טוב. = ביפן לא מסכימים עם מחמאה. עונים בצניעות: いえいえ、まだまだです (איאה איאה, מאדאמאדה דס).
+n どのくらい|dono kurai|כמה זמן / 勉強|benkyō|לימוד|べんきょう / しましたか。|shimashita ka?|עשית? = כמה זמן למדת?
+u 一ヶ月|ikkagetsu|חודש|いっかげつ / ~desu = חודש.
+x 一時|ichiji|השעה אחת|いちじ / ~desu = השעה אחת. = 一時 (איצ'יג'י) היא השעה אחת. חודש אחד זה 一ヶ月 (איקאגצו).
+n すごい！|sugoi!|מדהים! = מדהים!
+t כמעט כל זר שאומר כמה מילים ביפן שומע 日本語上手ですね. התשובה המנומסת היא צניעות, いえいえ, ולא "תודה, אני יודע".
+
+# משפחה
+w 家族|kazoku|משפחה|かぞく ; 妻|tsuma|אשתי|つま ; 娘|musume|בתי|むすめ ; お子さん|okosan|הילד שלך (בנימוס)|おこさん
+n ご家族|go-kazoku|המשפחה|ごかぞく / ~to / 一緒|issho|ביחד|いっしょ / ~desuka = אתה כאן עם המשפחה?
+u ~hai / 妻|tsuma|אשתי|つま / ~to / 娘|musume|בתי|むすめ / ~to / 来ました。|kimashita.|באתי|きました = כן, באתי עם אשתי ובתי.
+x ~hai / 家族|kazoku|משפחה|かぞく / ~o / ~kudasai = כן, תן לי משפחה. = ביקשת לקבל משפחה. כדי לומר עם מי באת אומרים 妻と娘と来ました (צומה טו מוסומה טו קימאשיטה).
+n お子さん|okosan|הבת שלך|おこさん / ~wa / 何歳|nansai|בת כמה|なんさい / ~desuka = בת כמה הבת שלך?
+u 十歳|jussai|בת עשר|じゅっさい / ~desu = בת עשר.
+x 十個|jukko|עשרה חפצים|じゅっこ / ~desu = עשרה חפצים. = 個 (קו) סופר חפצים. גיל אומרים עם 歳 (סאי): 十歳 (ג'וסאי).
+n かわいい|kawaii|חמוד / ~desune = כמה חמוד!
+t ביפנית יש מילים שונות למשפחה שלך ולמשפחה של אחרים: 娘 (מוסומה) היא הבת שלי, ו-お子さん (אוקוסאן) הוא הילד שלך. על שלך מדברים בצניעות, ועל של אחרים בכבוד.
+
+# להחליף פרטים
+w 楽しかった|tanoshikatta|היה כיף|たのしかった ; LINE|rain|ליין (אפליקציית מסרים) ; 交換|kōkan|החלפה|こうかん ; 連絡|renraku|לכתוב, ליצור קשר|れんらく
+n 今日|kyō|היום|きょう / ~wa / 楽しかった|tanoshikatta|היה כיף|たのしかった / ~desu = היה כיף היום.
+u 私|watashi|אני|わたし / ~mo / 楽しかった|tanoshikatta|היה כיף|たのしかった / ~desu / LINE|rain|ליין / ~o / 交換|kōkan|להחליף|こうかん / しませんか。|shimasen ka?|שנעשה? = גם לי היה כיף. נחליף ליין?
+x 私|watashi|אני|わたし / ~mo / 高かった|takakatta|היה יקר|たかかった / ~desu = גם לי היה יקר. = 高かった (טאקאקאטה) זה "היה יקר". היה כיף זה 楽しかった (טאנושיקאטה).
+n いいですね！|ii desu ne!|רעיון טוב! / QRコード|kyūāru kōdo|קוד QR / ~o / 見せて|misete|להראות|みせて / ~kudasai = רעיון טוב! תראה לי את קוד ה-QR.
+u ~hai / ~dozo = כן, הנה.
+x ~hai / ~arigato = כן, תודה רבה. = כשמגישים משהו אומרים どうぞ (דוזו), "הנה".
+n イスラエル|Isuraeru|ישראל / ~ni / 帰ったら|kaettara|כשתחזור|かえったら / 連絡|renraku|לכתוב|れんらく / ~kudasai = כשתחזור לישראל, תכתוב לי.
+t ליין (LINE) היא אפליקציית המסרים העיקרית ביפן, כמו וואטסאפ אצלנו. מחליפים פרטים בסריקת קוד QR.
+
+# התנגשות ברחוב
+r אדם שנתקל בך
+w ごめんなさい|gomennasai|סליחה (אישי) ; けが|kega|פציעה ; そちら|sochira|אתה (בנימוס) ; 本当に|hontō ni|באמת|ほんとうに
+n あっ、|a',|אוי / すみません！|sumimasen!|סליחה! = אוי, סליחה!
+u いえいえ、|ieie,|לא, לא / ~daijobu / ~desu = לא, לא, הכול בסדר.
+x いただきます。|itadakimasu.|(אומרים לפני האוכל) = בתיאבון. = いただきます (איטאדאקימאס) אומרים לפני האוכל. כשמישהו מתנצל עונים いえいえ、大丈夫です.
+n けが|kega|פציעה / ~wa / ありませんか。|arimasen ka?|אין? = לא נפצעת?
+u ~hai / ~daijobu / ~desu / そちら|sochira|ואתה / ~wa / ~daijobu / ~desuka = לא, הכול בסדר. ואתה בסדר?
+x 痛い|itai|כואב|いたい / ~desu / お金|okane|כסף|おかね / ~o / ~kudasai = כואב. תן לי כסף. = לבקש כסף על התנגשות קטנה ממש לא מקובל. עונים はい、大丈夫です (האי, דאיג'ובו דס).
+n ~hai / 本当に|hontō ni|באמת|ほんとうに / ごめんなさい。|gomennasai.|סליחה = כן. סליחה באמת.
+t ביפן אומרים すみません כל הזמן: כדי להתנצל, כדי להודות וכדי לקרוא למישהו. זו המילה הכי שימושית בטיול.
+
+# מקומות מומלצים
+w 行きました|ikimashita|הייתי, הלכתי|いきました ; 静か|shizuka|שקט|しずか ; 行ってみたい|itte mitai|רוצה לנסות ללכת|いってみたい ; 楽しんで|tanoshinde|תיהנה|たのしんで
+n どこ|doko|לאן / ~ni / 行きましたか。|ikimashita ka?|הלכת?|いきましたか = איפה כבר היית?
+u 浅草|Asakusa|אסאקוסה|あさくさ / ~to / 渋谷|Shibuya|שיבויה|しぶや / ~ni / 行きました。|ikimashita.|הייתי|いきました = הייתי באסאקוסה ובשיבויה.
+x 浅草|Asakusa|אסאקוסה|あさくさ / ~to / 渋谷|Shibuya|שיבויה|しぶや / ~wa / ~ikura / ~desuka = כמה עולות אסאקוסה ושיבויה? = שאלת על מחיר. כדי לספר איפה היית אומרים 浅草と渋谷に行きました.
+n 谷中|Yanaka|יאנאקה|やなか / ~mo / おすすめ|osusume|מומלץ / ~desu / 静か|shizuka|שקט|しずか / ~desu = גם יאנאקה מומלצת. שקט שם.
+u 行ってみたい|itte mitai|רוצה לנסות ללכת|いってみたい / ~desu / ~arigato = אני רוצה ללכת לשם. תודה!
+x 行きたくない|ikitakunai|לא רוצה ללכת|いきたくない / ~desu = אני לא רוצה ללכת. = 行きたくない (איקיטאקונאי) זה "לא רוצה ללכת", וזה לא מנומס אחרי המלצה. אומרים 行ってみたいです (איטה מיטאי דס).
+n 楽しんで|tanoshinde|תיהנה|たのしんで / ~kudasai = תיהנה!
+t יפנים אוהבים להמליץ על מקומות שקטים ומקומיים. שאלה קטנה כמו どうやって行きますか (דויאטה איקימאס קה), "איך מגיעים?", תשמח את מי שהמליץ.
+
+# שיחה על אוכל
+w 食べ物|tabemono|אוכל|たべもの ; 好き|suki|אוהב|すき ; 納豆|nattō|נאטו (פולי סויה מותססים)|なっとう ; 苦手|nigate|לא אוהב, לא בשבילי|にがて
+n 日本|Nihon|יפן|にほん / ~no / 食べ物|tabemono|אוכל|たべもの / ~wa / 好き|suki|אוהב|すき / ~desuka = אתה אוהב אוכל יפני?
+u ~hai / 特に|toku ni|במיוחד|とくに / 寿司|sushi|סושי|すし / ~ga / 好き|suki|אוהב|すき / ~desu = כן! במיוחד סושי.
+x ~hai / 寿司|sushi|סושי|すし / ~o / ~kudasai = כן, תן לי סושי. = ביקשת סושי. כאן מספרים מה אוהבים: 寿司が好きです (סושי גה סוקי דס).
+n 納豆|nattō|נאטו|なっとう / ~wa / どう|dō|איך / ~desuka = ומה עם נאטו?
+u 納豆|nattō|נאטו|なっとう / ~wa / ちょっと|chotto|קצת / 苦手|nigate|לא בשבילי|にがて / ~desu = נאטו... קצת לא בשבילי.
+x 納豆|nattō|נאטו|なっとう / ~wa / まずい|mazui|מגעיל / ~desu = נאטו מגעיל. = まずい (מאזוי) חריף ולא מנומס. אומרים בעדינות ちょっと苦手です (צ'וטו ניגאטה דס).
+n はは、|haha,|חה חה / 外国人|gaikokujin|זרים|がいこくじん / ~ni / 多い|ōi|נפוץ|おおい / ~desu = חה חה, זה נפוץ אצל זרים.
+t ביפן מבקרים אוכל בעדינות. במקום "לא טעים" אומרים 苦手 (ניגאטה), "לא בשבילי". ובסוף הארוחה אומרים ごちそうさまでした.
+
+# סירוב מנומס
+w 一緒に|issho ni|ביחד|いっしょに ; ちょっと|chotto|קצת (סירוב עדין) ; 残念|zannen|חבל|ざんねん ; 今度|kondo|בפעם הבאה|こんど
+n 今晩|konban|הערב|こんばん / 一緒に|issho ni|ביחד|いっしょに / カラオケ|karaoke|קריוקי / ~ni / 行きませんか。|ikimasen ka?|נלך?|いきませんか = רוצה לבוא לקריוקי הערב?
+u 今晩|konban|הערב|こんばん / ~wa / ちょっと…|chotto…|קצת... = הערב זה קצת...
+x 行きません。|ikimasen.|לא אלך|いきません = לא אלך. = "לא" ישיר נשמע ביפן חריף מדי. מסרבים בעדינות: 今晩はちょっと… (קונבאן וה צ'וטו).
+n そうですか。|sō desu ka.|אה, הבנתי / 残念|zannen|חבל|ざんねん / ~desu = אה, הבנתי. חבל.
+u 今度|kondo|בפעם הבאה|こんど / ぜひ|zehi|בשמחה / ~onegai = בפעם הבאה, בשמחה!
+x 今度|kondo|בפעם הבאה|こんど / ~mo / ちょっと…|chotto…|קצת... = גם בפעם הבאה זה קצת... = סירוב כפול עלול להעליב. אפשר להציע: 今度ぜひお願いします (קונדו זהי אונגאישימאס).
+n ~hai / ぜひ！|zehi!|בטח! = כן, בטח!
+t יפנים כמעט לא אומרים "לא" ישיר. ちょっと… עם חיוך ושתיקה קצרה הוא סירוב ברור ומנומס, ומי ששומע מבין מיד.
+
+@emergency|חירום ובריאות|רוקחת בבית המרקחת
+
+# כאב ראש בבית מרקחת
+w 頭|atama|ראש|あたま ; 痛い|itai|כואב|いたい ; 薬|kusuri|תרופה|くすり ; 何回|nankai|כמה פעמים|なんかい
+n ~irasshai / どう|dō|מה / されましたか。|saremashita ka?|קרה (בנימוס)? = ברוכים הבאים. מה קרה?
+u 頭|atama|ראש|あたま / ~ga / 痛い|itai|כואב|いたい / ~desu = כואב לי הראש.
+x 頭|atama|ראש|あたま / ~ga / いい|ii|טוב / ~desu = אני חכם. = 頭がいい (אטאמה גה אי) זה "חכם". כאב ראש זה 頭が痛いです (אטאמה גה איטאי דס).
+n この|kono|ה... הזה / 薬|kusuri|תרופה|くすり / ~ga / いい|ii|טובה / ですよ。|desu yo.|(בהדגשה) = התרופה הזאת טובה.
+u 一日|ichinichi|ביום|いちにち / 何回|nankai|כמה פעמים|なんかい / 飲みますか。|nomimasu ka?|לוקחים?|のみますか = כמה פעמים ביום לוקחים?
+x 一日|ichinichi|ביום|いちにち / 何回|nankai|כמה פעמים|なんかい / 食べますか。|tabemasu ka?|אוכלים?|たべますか = כמה פעמים ביום אוכלים? = ביפנית "שותים" תרופה: 飲みます (נומימאס), לא "אוכלים".
+n 三回|sankai|שלוש פעמים|さんかい / ~desu / 食後|shokugo|אחרי האוכל|しょくご / ~ni / 飲んで|nonde|לקחת|のんで / ~kudasai = שלוש פעמים. קח אחרי האוכל.
+t תרופות נגד כאבים ביפן חלשות לפעמים יותר מבארץ. כדאי להביא מהבית את התרופות הקבועות, עם מרשם באנגלית.
+
+# רופא: חום וביטוח
+r רופאה במרפאה
+w 熱|netsu|חום|ねつ ; 喉|nodo|גרון|のど ; 三十八度|sanjūhachido|38 מעלות|さんじゅうはちど ; 保険|hoken|ביטוח|ほけん
+n どう|dō|מה / されましたか。|saremashita ka?|קרה (בנימוס)? = מה קרה?
+u 熱|netsu|חום|ねつ / ~ga / あります。|arimasu.|יש / 喉|nodo|גרון|のど / ~mo / 痛い|itai|כואב|いたい / ~desu = יש לי חום. גם הגרון כואב.
+x 熱|netsu|חום|ねつ / ~o / ~kudasai = תן לי חום. = ביקשת לקבל חום. כדי לומר שיש לך חום אומרים 熱があります (נצו גה ארימאס).
+n 何度|nando|כמה מעלות|なんど / ~desuka = כמה מעלות?
+u 三十八度|sanjūhachido|38 מעלות|さんじゅうはちど / ~desu = 38 מעלות.
+x 三十八歳|sanjūhassai|בן 38|さんじゅうはっさい / ~desu = בן 38. = 歳 (סאי) זה גיל. מעלות אומרים עם 度 (דו): 三十八度 (סאנג'והאצ'ידו).
+n 保険|hoken|ביטוח|ほけん / ~wa / ~arimasuka = יש לך ביטוח?
+u ~hai / 旅行|ryokō|נסיעות|りょこう / 保険|hoken|ביטוח|ほけん / ~desu = כן, ביטוח נסיעות.
+x ~iie / 保険|hoken|ביטוח|ほけん / ~wa / おいしい|oishii|טעים / ~desu = לא, ביטוח טעים. = אמרת שביטוח טעים. ביטוח נסיעות זה 旅行保険です (ריוקו הוקן דס).
+n じゃあ、|jā,|אז / 領収書|ryōshūsho|קבלה|りょうしゅうしょ / ~o / 出しますね。|dashimasu ne.|ניתן|だしますね = אז ניתן לך קבלה.
+t ביפן משלמים לרופא במקום, גם כשיש ביטוח נסיעות. שומרים את הקבלה ואת הדוח הרפואי כדי לקבל החזר מחברת הביטוח.
+
+# הדרכון אבד
+r שוטר בתחנת המשטרה
+w 失くしました|nakushimashita|איבדתי|なくしました ; わかりません|wakarimasen|לא יודע ; 書類|shorui|טופס|しょるい ; 大使館|taishikan|שגרירות|たいしかん
+n どう|dō|מה / しましたか。|shimashita ka?|קרה? = מה קרה?
+u パスポート|pasupōto|דרכון / ~o / 失くしました。|nakushimashita.|איבדתי|なくしました = איבדתי את הדרכון.
+x パスポート|pasupōto|דרכון / ~o / 買いたい|kaitai|רוצה לקנות|かいたい / ~desu = אני רוצה לקנות דרכון. = 買いたい (קאיטאי) זה לקנות. איבדתי זה 失くしました (נאקושימאשיטה).
+n どこ|doko|איפה / ~de / 失くしましたか。|nakushimashita ka?|איבדת?|なくしましたか = איפה איבדת?
+u わかりません。|wakarimasen.|לא יודע / たぶん|tabun|כנראה / 電車|densha|ברכבת|でんしゃ / ~desu = לא יודע. כנראה ברכבת.
+x 電車|densha|רכבת|でんしゃ / ~ga / 好き|suki|אוהב|すき / ~desu = אני אוהב רכבות. = אמרת שאתה אוהב רכבות. אם לא בטוחים אומרים わかりません。たぶん電車です.
+n この|kono|ה... הזה / 書類|shorui|טופס|しょるい / ~o / 書いて|kaite|למלא|かいて / ~kudasai / 大使館|taishikan|שגרירות|たいしかん / ~ni / 持って|motte|לקחת|もって / 行って|itte|ללכת|いって / ~kudasai = מלא את הטופס הזה, וקח אותו לשגרירות.
+t כשדרכון אובד ביפן, מדווחים קודם במשטרה ומקבלים מספר אישור. איתו פונים לשגרירות ישראל בטוקיו. כדאי לשמור צילום של הדרכון בטלפון.
+
+# אמבולנס 119
+r מוקדנית 119
+w 救急|kyūkyū|מקרה רפואי דחוף|きゅうきゅう ; 倒れました|taoremashita|התמוטט|たおれました ; 火事|kaji|שריפה|かじ ; 救急車|kyūkyūsha|אמבולנס|きゅうきゅうしゃ
+n 火事|kaji|שריפה|かじ / ~desuka / 救急|kyūkyū|מקרה רפואי|きゅうきゅう / ~desuka = שריפה או מקרה רפואי?
+u 救急|kyūkyū|מקרה רפואי|きゅうきゅう / ~desu / 友達|tomodachi|חבר|ともだち / ~ga / 倒れました。|taoremashita.|התמוטט|たおれました = מקרה רפואי. חבר התמוטט.
+x 火事|kaji|שריפה|かじ / ~desu = שריפה. = 火事 (קאג'י) זו שריפה, ויגיעו כבאים. מקרה רפואי זה 救急 (קיוקיו).
+n 住所|jūsho|הכתובת|じゅうしょ / ~wa / ~doko / ~desuka = מה הכתובת?
+u ~sumimasen / 日本語|nihongo|יפנית|にほんご / ~ga / わかりません。|wakarimasen.|לא מבין / 英語|eigo|אנגלית|えいご / ~de / ~onegai = סליחה, אני לא מבין יפנית. באנגלית, בבקשה.
+x ~sumimasen / ~irasshai = סליחה, ברוכים הבאים. = いらっしゃいませ אומר המוכר ללקוח. אם לא מבינים מבקשים אנגלית: 英語でお願いします (איגו דה אונגאישימאס).
+n 救急車|kyūkyūsha|אמבולנס|きゅうきゅうしゃ / ~o / 送ります。|okurimasu.|נשלח|おくります = נשלח אמבולנס.
+t מספרי החירום ביפן: 119 לאמבולנס ולכבאים, 110 למשטרה. ההתקשרות בחינם. אם אפשר, בקשו מעובר אורח יפני לדבר עם המוקד.
+
+# הארנק נגנב
+r שוטר בקובאן
+w 財布|saifu|ארנק|さいふ ; 盗まれました|nusumaremashita|נגנב|ぬすまれました ; 現金|genkin|מזומן|げんきん ; 紙|kami|דף, נייר|かみ
+n どう|dō|מה / しましたか。|shimashita ka?|קרה? = מה קרה?
+u 財布|saifu|ארנק|さいふ / ~o / 盗まれました。|nusumaremashita.|נגנב|ぬすまれました = הארנק שלי נגנב.
+x 財布|saifu|ארנק|さいふ / ~o / ~kudasai = תן לי ארנק. = ביקשת ארנק. כשמשהו נגנב אומרים 財布を盗まれました (סאיפו או נוסומאראמאשיטה).
+n 中|naka|בתוך|なか / ~ni / 何|nani|מה|なに / ~ga / 入って|haitte|היה בתוך|はいって / いましたか。|imashita ka?|היה? = מה היה בתוכו?
+u 現金|genkin|מזומן|げんきん / ~to / カード|kādo|כרטיס אשראי / ~desu = מזומן וכרטיס אשראי.
+x 現金|genkin|מזומן|げんきん / ~de / ~onegai = במזומן, בבקשה. = 現金でお願いします זה "אשלם במזומן". כדי לומר מה היה בארנק אומרים 現金とカードです.
+n この|kono|ה... הזה / 紙|kami|דף|かみ / ~ni / 名前|namae|שם|なまえ / ~to / 住所|jūsho|כתובת|じゅうしょ / ~o / 書いて|kaite|לכתוב|かいて / ~kudasai = כתוב בדף הזה שם וכתובת.
+t ביפן ארנקים שאבדו חוזרים הרבה פעמים לבעלים עם כל הכסף. גם כשנראה שמשהו נגנב, כדאי לבדוק בקובאן ובמשרד האבדות.
+
+# חתך באצבע
+r מוכרת בבית מרקחת
+w 指|yubi|אצבע|ゆび ; 切りました|kirimashita|חתכתי|きりました ; 絆創膏|bansōkō|פלסטר|ばんそうこう ; 血|chi|דם|ち
+n ~irasshai = ברוכים הבאים.
+u 指|yubi|אצבע|ゆび / ~o / 切りました。|kirimashita.|חתכתי|きりました / 絆創膏|bansōkō|פלסטר|ばんそうこう / ~wa / ~arimasuka = חתכתי את האצבע. יש פלסטרים?
+x 指|yubi|אצבע|ゆび / ~o / ~kudasai = תן לי אצבע. = ביקשת לקבל אצבע. כדי לבקש פלסטר אומרים 絆創膏はありますか (באנסוקו וה ארימאס קה).
+n ~hai / こちら|kochira|כאן / ~desu / 血|chi|הדם|ち / ~wa / 止まりましたか。|tomarimashita ka?|נעצר?|とまりましたか = כן, כאן. הדם נעצר?
+u ~hai / ~daijobu / ~desu = כן, בסדר.
+x ~hai / 血|chi|דם|ち / ~ga / 好き|suki|אוהב|すき / ~desu = כן, אני אוהב דם. = אמרת שאתה אוהב דם. כדי לומר שהכול בסדר עונים はい、大丈夫です.
+n 消毒液|shōdokueki|חומר חיטוי|しょうどくえき / ~mo / ありますよ。|arimasu yo.|יש = יש גם חומר חיטוי.
+t אם מישהו עזר לכם ביפן, תודה עם השתחוות קטנה, ありがとうございました, מוערכת מאוד. מתנה או כסף בתמורה לעזרה דווקא יביכו.
+
+# כאב בטן
+r פקידה בקבלה במלון
+w お腹|onaka|בטן|おなか ; 病院|byōin|מרפאה, בית חולים|びょういん ; 話せる|hanaseru|שיודע לדבר|はなせる ; 医者|isha|רופא|いしゃ
+n ~hai / どう|dō|מה / されましたか。|saremashita ka?|קרה (בנימוס)? = כן, מה קרה?
+u お腹|onaka|בטן|おなか / ~ga / 痛い|itai|כואב|いたい / ~desu = כואבת לי הבטן.
+x お腹|onaka|בטן|おなか / ~ga / 空きました。|sukimashita.|ריקה (רעב)|すきました = אני רעב. = お腹が空きました (אונאקה גה סוקימאשיטה) זה "אני רעב". כאב בטן זה お腹が痛いです.
+n 病院|byōin|לרופא|びょういん / ~ni / 行きますか。|ikimasu ka?|תלך?|いきますか = רוצה ללכת לרופא?
+u 英語|eigo|אנגלית|えいご / ~ga / 話せる|hanaseru|שמדבר|はなせる / 医者|isha|רופא|いしゃ / ~wa / いますか。|imasu ka?|יש? = יש רופא שמדבר אנגלית?
+x 英語|eigo|אנגלית|えいご / ~ga / 話せる|hanaseru|שמדבר|はなせる / 犬|inu|כלב|いぬ / ~wa / いますか。|imasu ka?|יש? = יש כלב שמדבר אנגלית? = 犬 (אינו) זה כלב. רופא זה 医者 (אישה).
+n ~hai / 近く|chikaku|קרוב|ちかく / ~ni / あります。|arimasu.|יש / 地図|chizu|מפה|ちず / ~o / 書きますね。|kakimasu ne.|אצייר לך|かきますね = כן, יש קרוב. אצייר לך מפה.
+t בערים הגדולות ביפן יש מרפאות עם רופאים דוברי אנגלית. הקבלה במלון יודעת להמליץ, ובמקרה חירום מתקשרים ל-119.
+
+# הטלפון אבד
+r עובד במשרד האבדות
+w 携帯|keitai|טלפון נייד|けいたい ; 黒い|kuroi|שחור|くろい ; スマホ|sumaho|סמארטפון ; 見つかったら|mitsukattara|אם יימצא|みつかったら
+n ~hai / どう|dō|מה / しましたか。|shimashita ka?|קרה? = כן, מה קרה?
+u 携帯|keitai|טלפון נייד|けいたい / ~o / 失くしました。|nakushimashita.|איבדתי|なくしました = איבדתי את הטלפון.
+x 携帯|keitai|טלפון נייד|けいたい / ~o / 買いました。|kaimashita.|קניתי|かいました = קניתי טלפון. = 買いました (קאימאשיטה) זה קניתי. איבדתי זה 失くしました (נאקושימאשיטה).
+n どんな|donna|איזה / 携帯|keitai|טלפון|けいたい / ~desuka = איזה טלפון?
+u 黒い|kuroi|שחור|くろい / スマホ|sumaho|סמארטפון / ~desu = סמארטפון שחור.
+x 黒い|kuroi|שחור|くろい / 犬|inu|כלב|いぬ / ~desu = כלב שחור. = 犬 (אינו) זה כלב. כדי לתאר את הטלפון אומרים 黒いスマホです (קורוי סומאהו דס).
+n 見つかったら|mitsukattara|אם יימצא|みつかったら / ホテル|hoteru|המלון / ~ni / 連絡|renraku|הודעה|れんらく / します。|shimasu.|נעשה = אם יימצא, נודיע למלון.
+t שמרו את כתובת המלון ואת מספר הטלפון שלו על דף, או בכרטיס "הראה למקומי". אם הטלפון אבד, זה מה שיעזור לחזור.
+
+# אלרגיה לתרופה
+r רוקח
+w 処方箋|shohōsen|מרשם|しょほうせん ; ペニシリン|penishirin|פניצילין ; 眠く|nemuku|ישנוני|ねむく ; 運転|unten|נהיגה|うんてん
+n 処方箋|shohōsen|מרשם|しょほうせん / ~desune / お薬|o-kusuri|התרופה|おくすり / ~o / 出します。|dashimasu.|ניתן|だします = יש מרשם, נכון? ניתן לך את התרופה.
+u ペニシリン|penishirin|פניצילין / ~no / アレルギー|arerugī|אלרגיה / ~ga / あります。|arimasu.|יש = יש לי אלרגיה לפניצילין.
+x ペニシリン|penishirin|פניצילין / ~o / たくさん|takusan|הרבה / ~kudasai = תן לי הרבה פניצילין. = ביקשת הרבה פניצילין! אלרגיה אומרים ペニシリンのアレルギーがあります.
+n ~daijobu / ~desu / これ|kore|זה / ~wa / ペニシリン|penishirin|פניצילין / では|dewa|(שלילה) / ありません。|arimasen.|לא = בסדר. זה לא פניצילין.
+u 眠く|nemuku|ישנוני|ねむく / なりますか。|narimasu ka?|נעשים? = זה גורם לישנוניות?
+x 眠く|nemuku|ישנוני|ねむく / ~kudasai = תן לי ישנוני. = המשפט לא שלם. על תופעת לוואי שואלים 眠くなりますか (נמוקו נארימאס קה).
+n 少し|sukoshi|קצת|すこし / なります。|narimasu.|כן, נעשים / 運転|unten|נהיגה|うんてん / ~wa / しないで|shinaide|אל תעשה / ~kudasai = קצת. אל תנהג.
+t על שקית התרופה ביפן כתוב מתי לקחת: 食前 (שוקוזן), לפני האוכל, או 食後 (שוקוגו), אחרי האוכל. אלרגיה לתרופה כדאי להחזיק כתובה גם בכרטיס "הראה למקומי".
+
+# אני לא מדבר יפנית
+r פקיד בבית החולים
+w 話せません|hanasemasen|לא מדבר|はなせません ; 通訳|tsūyaku|מתורגמן|つうやく ; アプリ|apuri|אפליקציה ; 翻訳|hon'yaku|תרגום|ほんやく
+n 保険証|hokenshō|כרטיס ביטוח|ほけんしょう / ~wa / ~arimasuka = יש לך כרטיס ביטוח?
+u ~sumimasen / 日本語|nihongo|יפנית|にほんご / ~ga / 話せません。|hanasemasen.|לא מדבר|はなせません / 通訳|tsūyaku|מתורגמן|つうやく / ~wa / いますか。|imasu ka?|יש? = סליחה, אני לא מדבר יפנית. יש מתורגמן?
+x ~sumimasen / 日本語|nihongo|יפנית|にほんご / ~ga / 上手|jōzu|טוב|じょうず / ~desu = סליחה, אני טוב ביפנית. = אמרת שהיפנית שלך טובה. כדי לבקש מתורגמן אומרים 通訳はいますか (צויאקו וה אימאס קה).
+n 今|ima|עכשיו|いま / いません。|imasen.|אין / アプリ|apuri|אפליקציה / ~de / 翻訳|hon'yaku|לתרגם|ほんやく / しましょう。|shimashō.|בוא נעשה = כרגע אין. בוא נתרגם באפליקציה.
+u ~hai / ~onegai = כן, בבקשה.
+x ~iie / いただきます。|itadakimasu.|(אומרים לפני האוכל) = לא, בתיאבון. = いただきます (איטאדאקימאס) אומרים לפני האוכל. כדי להסכים אומרים はい、お願いします.
+n ここ|koko|לכאן / ~ni / 話して|hanashite|לדבר|はなして / ~kudasai = דבר לכאן, בבקשה.
+t בבתי חולים גדולים ובמוקדי תיירים יש תרגום בטלפון. משפט אחד שימושי במיוחד: 日本語が話せません (ניהונגו גה האנאסמאסן), אני לא מדבר יפנית.
+
+</script>
+<script>
+const RAW = {
+  airport: {
+    title: "שדה תעופה", role: "ביקורת הגבולות",
+    tip: "בביקורת הגבולות מגישים את הדרכון בשתי ידיים. ביפן זו מחווה מנומסת.",
+    words: ["空港|kūkō|נמל תעופה|くうこう", "パスポート|pasupōto|דרכון", "搭乗券|tōjōken|כרטיס עלייה למטוס|とうじょうけん", "荷物|nimotsu|מטען, מזוודות|にもつ", "出口|deguchi|יציאה|でぐち", "両替|ryōgae|המרת כסף|りょうがえ", "トイレ|toire|שירותים"],
+    dialog: [
+      ["n", "こんにちは。|konnichiwa.|שלום / パスポート|pasupōto|דרכון / を|o|(מילית: את) / お願いします。|onegaishimasu.|בבקשה|おねがいします", "שלום. את הדרכון, בבקשה."],
+      ["u", [
+        ["はい、|hai,|כן / どうぞ。|dōzo.|הנה, בבקשה", "כן, הנה בבקשה.", 1],
+        ["ありがとうございます。|arigatō gozaimasu.|תודה רבה", "תודה רבה.", 0, "כשמגישים משהו לא אומרים תודה. אומרים どうぞ (דוזו), כלומר 'הנה, בבקשה'."],
+        ["いただきます。|itadakimasu.|(אומרים לפני האוכל)", "בתיאבון (לפני ארוחה).", 0, "いただきます (איטאדאקימאס) אומרים לפני שמתחילים לאכול. כאן מגישים דרכון, אז אומרים どうぞ (דוזו)."]
+      ]],
+      ["n", "旅行|ryokō|טיול, נסיעה|りょこう / の|no|של / 目的|mokuteki|מטרה|もくてき / は|wa|(מילית נושא) / 何|nan|מה|なん / ですか。|desu ka?|(שאלה מנומסת)", "מה מטרת הנסיעה?"],
+      ["u", [
+        ["空港|kūkō|נמל תעופה|くうこう / です。|desu.|(זה)", "נמל תעופה.", 0, "אמרת 'נמל תעופה'. המילה לתיירות היא 観光 (קאנקו)."],
+        ["観光|kankō|תיירות|かんこう / です。|desu.|(זה)", "תיירות.", 1],
+        ["トイレ|toire|שירותים / です。|desu.|(זה)", "שירותים.", 0, "אמרת 'שירותים'. המטרה שלך היא תיירות: 観光です (קאנקו דס)."]
+      ]],
+      ["n", "何日|nannichi|כמה ימים|なんにち / いますか。|imasu ka?|תהיה (כאן)?", "כמה ימים תהיה כאן?"],
+      ["u", [
+        ["十時|jūji|השעה עשר|じゅうじ / です。|desu.|(זה)", "השעה עשר.", 0, "十時 (ג'וג'י) זו השעה עשר. עשרה ימים זה 十日 (טוקה)."],
+        ["二人|futari|שני אנשים|ふたり / です。|desu.|(זה)", "שני אנשים.", 0, "二人 (פוטארי) זה שני אנשים. השאלה הייתה כמה ימים."],
+        ["十日|tōka|עשרה ימים|とおか / です。|desu.|(זה)", "עשרה ימים.", 1]
+      ]],
+      ["n", "はい、|hai,|כן / 大丈夫|daijōbu|בסדר|だいじょうぶ / です。|desu.|(זה) / よい|yoi|טוב / 旅|tabi|מסע|たび / を。|o.|(מילית)", "בסדר, הכול תקין. נסיעה טובה."],
+      ["u", [
+        ["ありがとうございます。|arigatō gozaimasu.|תודה רבה", "תודה רבה.", 1],
+        ["おやすみなさい。|oyasuminasai.|לילה טוב", "לילה טוב.", 0, "おやすみなさい (אויאסומינאסאי) זה 'לילה טוב' לפני שינה. כאן מודים: ありがとうございます (אריגאטו גוזאימאס)."]
+      ]]
+    ]
+  },
+  transport: {
+    title: "תחבורה ציבורית", role: "דלפק המידע בתחנה",
+    tip: "ברכבות ביפן לא מדברים בטלפון ומשתדלים לדבר בשקט.",
+    words: ["駅|eki|תחנה|えき", "電車|densha|רכבת|でんしゃ", "切符|kippu|כרטיס נסיעה|きっぷ", "地下鉄|chikatetsu|רכבת תחתית|ちかてつ", "何番線|nanbansen|איזה רציף|なんばんせん", "右|migi|ימין|みぎ", "左|hidari|שמאל|ひだり"],
+    dialog: [
+      ["n", "どう|dō|מה, איך / しましたか。|shimashita ka?|קרה?", "מה קרה? במה אפשר לעזור?"],
+      ["u", [
+        ["新宿|Shinjuku|שינג'וקו|しんじゅく / を|o|(מילית: את) / ください。|kudasai.|תן לי בבקשה", "תן לי את שינג'וקו, בבקשה.", 0, "ください (קודאסאי) מבקש לקבל חפץ. כדי לומר לאן אתה נוסע אומרים 新宿に行きたいです (שינג'וקו ני איקיטאי דס)."],
+        ["新宿|Shinjuku|שינג'וקו|しんじゅく / に|ni|ל- / 行きたい|ikitai|רוצה לנסוע|いきたい / です。|desu.|(זה)", "אני רוצה לנסוע לשינג'וקו.", 1],
+        ["お会計|o-kaikei|החשבון|おかいけい / お願いします。|onegaishimasu.|בבקשה|おねがいします", "את החשבון, בבקשה.", 0, "את זה אומרים במסעדה כשרוצים לשלם. כאן תגיד לאן אתה נוסע: 新宿に行きたいです."]
+      ]],
+      ["n", "山手線|Yamanote-sen|קו יאמאנוטה|やまのてせん / に|ni|על / 乗って|notte|לעלות (על כלי תחבורה)|のって / ください。|kudasai.|בבקשה / 三番線|sanbansen|רציף 3|さんばんせん / です。|desu.|(זה)", "תעלה על קו יאמאנוטה. זה רציף 3."],
+      ["u", [
+        ["三番線|sanbansen|רציף 3|さんばんせん / ですね。|desu ne.|נכון? / 何分|nanpun|כמה דקות|なんぷん / かかりますか。|kakarimasu ka?|לוקח?", "רציף 3, נכון? כמה דקות זה לוקח?", 1],
+        ["三番線|sanbansen|רציף 3|さんばんせん / は|wa|(מילית נושא) / いくら|ikura|כמה (מחיר) / ですか。|desu ka?|(שאלה מנומסת)", "כמה עולה רציף 3?", 0, "いくら (איקורה) שואל על מחיר. על זמן שואלים 何分 (נאנפון), כמה דקות."],
+        ["右|migi|ימין|みぎ / です。|desu.|(זה)", "ימין.", 0, "אמרת 'ימין'. נסה לשאול כמה זמן הנסיעה: 何分かかりますか (נאנפון קאקארימאס קה)."]
+      ]],
+      ["n", "十分|juppun|עשר דקות|じゅっぷん / ぐらい|gurai|בערך / です。|desu.|(זה)", "בערך עשר דקות."],
+      ["u", [
+        ["いただきます。|itadakimasu.|(אומרים לפני האוכל)", "בתיאבון (לפני ארוחה).", 0, "いただきます אומרים לפני האוכל. כאן מודים: わかりました、ありがとうございます."],
+        ["わかりました。|wakarimashita.|הבנתי / ありがとうございます。|arigatō gozaimasu.|תודה רבה", "הבנתי. תודה רבה.", 1]
+      ]]
+    ]
+  },
+  restaurant: {
+    title: "מסעדה", role: "צוות המסעדה",
+    tip: "ביפן לא משאירים טיפ. ברוב המסעדות משלמים בקופה ליד היציאה.",
+    words: ["メニュー|menyū|תפריט", "水|mizu|מים|みず", "ラーメン|rāmen|ראמן", "肉|niku|בשר|にく", "おいしい|oishii|טעים", "お会計|o-kaikei|החשבון|おかいけい", "一つ|hitotsu|אחד (פריט)|ひとつ"],
+    dialog: [
+      ["n", "いらっしゃいませ。|irasshaimase.|ברוכים הבאים / 何名様|nanmei-sama|כמה אנשים (בנימוס)|なんめいさま / ですか。|desu ka?|(שאלה מנומסת)", "ברוכים הבאים. כמה אנשים אתם?"],
+      ["u", [
+        ["二つ|futatsu|שניים (חפצים)|ふたつ / です。|desu.|(זה)", "שני דברים.", 0, "二つ (פוטאצו) סופר חפצים. אנשים סופרים כך: 一人, 二人 (היטורי, פוטארי)."],
+        ["二人|futari|שני אנשים|ふたり / です。|desu.|(זה)", "שניים.", 1],
+        ["二時|niji|השעה שתיים|にじ / です。|desu.|(זה)", "השעה שתיים.", 0, "二時 (ניג'י) זו השעה שתיים. שני אנשים זה 二人 (פוטארי)."]
+      ]],
+      ["n", "こちら|kochira|לכאן / へ|e|אל / どうぞ。|dōzo.|בבקשה / ご注文|go-chūmon|ההזמנה|ごちゅうもん / は。|wa?|(ו...?)", "מכאן בבקשה. מה תרצו להזמין?"],
+      ["u", [
+        ["ラーメン|rāmen|ראמן / を|o|(מילית: את) / 一つ|hitotsu|אחד|ひとつ / ください。|kudasai.|תן לי בבקשה / 肉|niku|בשר|にく / なし|nashi|בלי / で|de|(מילית) / お願いします。|onegaishimasu.|בבקשה|おねがいします", "ראמן אחד בבקשה. בלי בשר, בבקשה.", 1],
+        ["ラーメン|rāmen|ראמן / は|wa|(מילית נושא) / おいしい|oishii|טעים / ですか。|desu ka?|(שאלה מנומסת)", "הראמן טעים?", 0, "שאלת אם הראמן טעים. כדי להזמין אומרים ラーメンを一つください (ראמן או היטוצו קודאסאי)."],
+        ["ラーメン|rāmen|ראמן / は|wa|(מילית נושא) / どこ|doko|איפה / ですか。|desu ka?|(שאלה מנומסת)", "איפה הראמן?", 0, "שאלת איפה הראמן. כדי להזמין אומרים ...をください (או קודאסאי)."]
+      ]],
+      ["n", "かしこまりました。|kashikomarimashita.|בהחלט, הבנתי (בנימוס רב) / お水|o-mizu|מים|おみず / も|mo|גם / どうぞ。|dōzo.|בבקשה", "בהחלט. והנה גם מים."],
+      ["u", [
+        ["いってきます。|ittekimasu.|אני יוצא (ואחזור)", "אני יוצא, אחזור.", 0, "いってきます (איטֶקימאס) אומרים כשיוצאים מהבית. כאן מודים: ありがとうございます."],
+        ["ありがとうございます。|arigatō gozaimasu.|תודה רבה", "תודה רבה.", 1]
+      ]],
+      ["n", "お会計|o-kaikei|החשבון|おかいけい / は|wa|(מילית נושא) / レジ|reji|קופה / で|de|ב- / お願いします。|onegaishimasu.|בבקשה|おねがいします", "את החשבון משלמים בקופה, בבקשה."],
+      ["u", [
+        ["ごちそうさまでした。|gochisōsama deshita.|תודה על הארוחה", "תודה על הארוחה.", 1],
+        ["いただきます。|itadakimasu.|(אומרים לפני האוכל)", "בתיאבון (לפני ארוחה).", 0, "いただきます אומרים לפני האוכל. אחרי האוכל אומרים ごちそうさまでした (גוצ'יסוסאמה דֶשיטה)."]
+      ]]
+    ]
+  },
+  shopping: {
+    title: "קניות", role: "הקופה בחנות",
+    tip: "בקופה מניחים את הכסף על המגש הקטן, לא ישירות ביד של המוכר.",
+    words: ["いくら|ikura|כמה (מחיר)", "円|en|ין|えん", "高い|takai|יקר|たかい", "安い|yasui|זול|やすい", "これ|kore|זה", "カード|kādo|כרטיס אשראי", "袋|fukuro|שקית|ふくろ"],
+    dialog: [
+      ["n", "いらっしゃいませ。|irasshaimase.|ברוכים הבאים", "ברוכים הבאים."],
+      ["u", [
+        ["すみません、|sumimasen,|סליחה / これ|kore|זה / は|wa|(מילית נושא) / 何|nan|מה|なん / ですか。|desu ka?|(שאלה מנומסת)", "סליחה, מה זה?", 0, "שאלת 'מה זה'. על מחיר שואלים いくら (איקורה): これはいくらですか."],
+        ["すみません、|sumimasen,|סליחה / これ|kore|זה / は|wa|(מילית נושא) / いくら|ikura|כמה (מחיר) / ですか。|desu ka?|(שאלה מנומסת)", "סליחה, כמה זה עולה?", 1],
+        ["これ|kore|זה / は|wa|(מילית נושא) / 安い|yasui|זול|やすい / です。|desu.|(זה)", "זה זול.", 0, "קבעת שזה זול, אבל לא שאלת. כדי לשאול על מחיר אומרים これはいくらですか (קורה וה איקורה דס קה)."]
+      ]],
+      ["n", "五百円|gohyaku en|500 ין|ごひゃくえん / です。|desu.|(זה) / 袋|fukuro|שקית|ふくろ / は|wa|(מילית נושא) / いりますか。|irimasu ka?|צריך?", "500 ין. צריך שקית?"],
+      ["u", [
+        ["はい、|hai,|כן / 五百円|gohyaku en|500 ין|ごひゃくえん / です。|desu.|(זה)", "כן, 500 ין.", 0, "חזרת על המחיר. כדי לוותר בנימוס על שקית אומרים いいえ、大丈夫です (איאֶה, דאיג'ובו דס)."],
+        ["いいえ、|iie,|לא / 大丈夫|daijōbu|בסדר|だいじょうぶ / です。|desu.|(זה)", "לא, זה בסדר.", 1],
+        ["高い|takai|יקר|たかい / です。|desu.|(זה)", "זה יקר.", 0, "אמרת 'יקר'. המוכר שאל אם צריך שקית. אפשר לענות いいえ、大丈夫です."]
+      ]],
+      ["n", "お支払い|o-shiharai|התשלום|おしはらい / は。|wa?|(ו...?)", "ואיך תשלם?"],
+      ["u", [
+        ["カード|kādo|כרטיס אשראי / で|de|ב- / お願いします。|onegaishimasu.|בבקשה|おねがいします", "בכרטיס, בבקשה.", 1],
+        ["カード|kādo|כרטיס אשראי / を|o|(מילית: את) / ください。|kudasai.|תן לי בבקשה", "תן לי כרטיס, בבקשה.", 0, "ביקשת לקבל כרטיס. כדי לומר 'אשלם בכרטיס' אומרים カードでお願いします (קאדו דה אונֶגאישימאס)."]
+      ]],
+      ["n", "ありがとうございました。|arigatō gozaimashita.|תודה רבה (על הקנייה)", "תודה רבה."]
+    ]
+  }
+};
+
+const MAC = {"wa": "は|wa|(מילית נושא)", "o": "を|o|(מילית: את)", "ni": "に|ni|ל-, ב-", "de": "で|de|ב-, באמצעות", "no": "の|no|של", "mo": "も|mo|גם", "ga": "が|ga|(מילית)", "to": "と|to|ו-, עם", "kara": "から|kara|מ-", "made": "まで|made|עד", "desu": "です。|desu.|(זה)", "desuka": "ですか。|desu ka?|(שאלה מנומסת)", "desune": "ですね。|desu ne.|נכון?", "onegai": "お願いします。|onegaishimasu.|בבקשה|おねがいします", "kudasai": "ください。|kudasai.|בבקשה (תן לי, עשה)", "arigato": "ありがとうございます。|arigatō gozaimasu.|תודה רבה", "sumimasen": "すみません、|sumimasen,|סליחה", "hai": "はい、|hai,|כן", "iie": "いいえ、|iie,|לא", "wakatta": "わかりました。|wakarimashita.|הבנתי", "dozo": "どうぞ。|dōzo.|בבקשה, הנה", "kashiko": "かしこまりました。|kashikomarimashita.|בהחלט (בנימוס רב)", "shosho": "少々|shōshō|רגע קט|しょうしょう / お待ちください。|omachi kudasai.|המתן בבקשה|おまちください", "irasshai": "いらっしゃいませ。|irasshaimase.|ברוכים הבאים", "arimasuka": "ありますか。|arimasu ka?|יש?", "iidesuka": "いいですか。|ii desu ka?|אפשר? זה בסדר?", "doko": "どこ|doko|איפה", "ikura": "いくら|ikura|כמה (מחיר)", "daijobu": "大丈夫|daijōbu|בסדר|だいじょうぶ"};
+// the first conversation of the four original topics keeps its original content (RAW above)
+const RAW_TITLES = { airport: "ביקורת הגבולות", transport: "הדרך לשינג'וקו", restaurant: "ארוחת ראמן", shopping: "קנייה בחנות" };
+const ORDER = ["airport", "transport", "hotel", "restaurant", "shopping", "directions", "numbers", "smalltalk", "emergency"];
+const FREE = "free";
+
+function tok(s) { const [ja, ro, he, kana] = s.split("|").map(x => (x || "").trim()); return { ja, ro, he: he || "", kana: kana || "" }; }
+function toks(line) { return line.split(" / ").map(tok); }
+const jaStr = tk => tk.map(t => t.ja).join("");
+
+/* ---------- storage ---------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("jp-demo:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("jp-demo:" + k, JSON.stringify(v)); } catch {} }
+};
+const pad = n => String(n).padStart(2, "0");
+const dayStr = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const TODAY = dayStr(new Date());
+const addDays = (s, n) => { const d = new Date(s + "T12:00:00"); d.setDate(d.getDate() + n); return dayStr(d); };
+const YESTERDAY = addDays(TODAY, -1);
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const PLAY_ICON = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2l11 6-11 6z"/></svg>';
+
+// romaji → Hebrew letters, built for Israeli readers (arigatō → אריגאטו)
+function heWord(raw) {
+  const m = raw.match(/^(.*?)([.,?!]*)$/); let w = m[1].toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z]/g, "");
+  const punct = m[2]; if (!w) return punct;
+  if (w === "desu") return "דס" + punct;
+  if (w === "e") return "אֶ" + punct;
+  const dropU = /(masu|desu)$/.test(w);
+  const C = { k: "ק", g: "ג", s: "ס", z: "ז", t: "ט", d: "ד", n: "נ", h: "ה", f: "פ", b: "ב", p: "פ", m: "מ", y: "י", r: "ר", w: "וו", j: "ג'", sh: "ש", ch: "צ'", ts: "צ" };
+  const V = "aiueo"; let out = "", i = 0;
+  const nq = (c, mark) => c.endsWith("'") ? c.slice(0, -1) + mark + "'" : c + mark;
+  while (i < w.length) {
+    const c = w[i];
+    let cons = "";
+    if (!V.includes(c)) {
+      if (c === "n" && w[i + 1] === "n") { i++; continue; }
+      if (c === "n" && (i + 1 >= w.length || (!V.includes(w[i + 1]) && w[i + 1] !== "y"))) { out += "נ"; i++; continue; }
+      if (c === w[i + 1]) { i++; continue; }
+      const two = w.slice(i, i + 2);
+      if (C[two]) { cons = C[two]; i += 2; }
+      else if (w[i + 1] === "y" && C[c] && c !== "y") { cons = C[c] + "י"; i += 2; }
+      else if (C[c]) { cons = C[c]; i += 1; }
+      else { i++; continue; }
+      if (i >= w.length || !V.includes(w[i])) { out += cons; continue; }
+    }
+    const v = w[i]; i++;
+    const fin = i >= w.length, start = out === "";
+    if (v === "a") out += cons ? cons + (fin ? "ה" : "א") : "א";
+    else if (v === "i") out += cons ? cons + "י" : (start ? "אי" : "י");
+    else if (v === "u") out += (dropU && fin && cons === "ס") ? cons : (cons ? cons + "ו" : (start ? "או" : "ו"));
+    else if (v === "o") out += cons ? cons + "ו" : "או";
+    else if (v === "e") out += cons ? (fin ? cons + "ה" : nq(cons, "ֶ")) : (start ? "אֶ" : (fin ? "אה" : "אֶ"));
+  }
+  const finals = { "נ": "ן", "מ": "ם", "פ": "ף", "צ": "ץ", "כ": "ך" };
+  const last = out.slice(-1); if (finals[last]) out = out.slice(0, -1) + finals[last];
+  return out + punct;
+}
+const heTr = ro => ro.split(/[\s-]+/).filter(Boolean).map(heWord).join(" ");
+
+function jaHTML(t, furi) {
+  return t.kana && furi ? `<ruby>${esc(t.ja)}<rt>${esc(t.kana)}</rt></ruby>` : esc(t.ja);
+}
+// caption with one row per enabled layer; tokens share an index across rows so highlighting lines up
+function caption(tk, tr, { tap = true, forceTr = false, hideTr = false } = {}) {
+  const st = S.settings, tag = tap ? "button" : "span";
+  const row = (cls, f) => `<div class="${cls}">${tk.map((t, i) => `<${tag} class="tk" data-i="${i}"${tap ? ` data-w='${esc(JSON.stringify(t))}'` : ""}>${f(t)}</${tag}>`).join("")}</div>`;
+  let h = "";
+  if (st.ja) h += row("ja", t => jaHTML(t, st.furi));
+  if (st.ro) h += row("ro", t => esc(t.ro));
+  if (st.hetr) h += row("hetr", t => esc(heTr(t.ro)));
+  if (!hideTr && (st.tr || forceTr) && tr) h += `<div class="tr">${esc(tr)}</div>`;
+  if (!h) h = `<div class="off">הכתוביות כבויות. הקשיבו ונסו להבין.</div>`;
+  return `<div class="cap" lang="ja">${h}</div>`;
+}
+function highlight(el, i) { if (el) el.querySelectorAll(".tk").forEach(s => s.classList.toggle("on", +s.dataset.i === i)); }
+
+/* ---------- speech ---------- */
+let voices = [];
+const synth = "speechSynthesis" in window ? window.speechSynthesis : null;
+function loadVoices() { try { voices = synth ? synth.getVoices() : []; } catch { voices = []; } }
+let voicesChecked = false;
+loadVoices(); if (synth) synth.onvoiceschanged = () => { loadVoices(); if (tab === "talk") render(); };
+setTimeout(() => { voicesChecked = true; loadVoices(); if (tab === "talk") render(); }, 1500);
+const jaVoice = () => voices.find(v => /^ja/i.test(v.lang)) || null;
+const heVoice = () => voices.find(v => /^(he|iw)/i.test(v.lang)) || null;
+const CHARS = {
+  haruka: { name: "הארוקה", desc: "אישה", pitch: 1.15, hair: "bob", shirt: "#2B4A8A", r: 30 },
+  takeshi: { name: "טאקשי", desc: "גבר", pitch: 0.8, hair: "short", shirt: "#4E6B57", r: 30 },
+  yuta: { name: "יוטה", desc: "ילד", pitch: 1.5, hair: "bowl", shirt: "#D98A3D", r: 32 }
+};
+let gen = 0, speaking = false;
+function setSpeaking(on) { speaking = on; document.querySelectorAll(".av").forEach(a => a.classList.toggle("speaking", on)); }
+function stopSpeech() { gen++; try { synth && synth.cancel(); } catch {} setSpeaking(false); }
+const mora = t => ((t.kana || t.ja).replace(/[。、？！?!,.\s]/g, "").length) || 1;
+// what the speech engine reads: kanji words as their kana reading (a lone 頭 is otherwise read とう, not あたま), particles は/へ as わ/え
+const spoken = t => {
+  const p = (t.ja.match(/[。、？！]+$/) || [""])[0], j = t.ja.slice(0, t.ja.length - p.length);
+  if (j === "は" && /^wa/.test(t.ro)) return "わ" + p;
+  if (j === "へ" && /^e/.test(t.ro)) return "え" + p;
+  return (/[\u3400-\u9fff]/.test(j) && t.kana ? t.kana : j) + p;
+};
+function sayOne(text, rate, pitch, cb) {
+  const v = jaVoice();
+  if (!v || !synth) { setTimeout(cb, Math.max(350, text.length * 170 / rate)); return; }
+  const u = new SpeechSynthesisUtterance(text); u.voice = v; u.lang = v.lang; u.rate = rate; u.pitch = pitch;
+  let fired = false; const end = () => { if (!fired) { fired = true; cb(); } };
+  u.onend = end; u.onerror = end; synth.speak(u);
+}
+// speed: 0 slow (word by word), 1 medium, 2 normal
+function play(tk, { el, speed = S.settings.speed, pitch = 1, onEnd } = {}) {
+  stopSpeech(); const my = gen;
+  const hl = i => { if (my === gen) highlight(el, i); };
+  const done = () => { if (my !== gen) return; hl(-1); setSpeaking(false); onEnd && onEnd(); };
+  setSpeaking(true);
+  if (speed === 0) {
+    let i = 0;
+    const next = () => { if (my !== gen) return; if (i >= tk.length) return done(); hl(i); sayOne(spoken(tk[i]), 0.7, pitch, () => { i++; setTimeout(next, 320); }); };
+    next(); return;
+  }
+  const rate = speed === 1 ? 0.75 : 1.0, msPer = 150 / rate;
+  const starts = []; let acc = 0; tk.forEach(t => { starts.push(acc); acc += mora(t); });
+  let timers = [], started = false, byBoundary = false;
+  const startTimers = () => { if (started) return; started = true; starts.forEach((s, i) => timers.push(setTimeout(() => { if (!byBoundary) hl(i); }, s * msPer))); };
+  const charStarts = []; let c = 0; tk.forEach(t => { charStarts.push(c); c += spoken(t).length; });
+  const v = jaVoice();
+  if (!v || !synth) { startTimers(); setTimeout(done, acc * msPer + 300); return; }
+  const u = new SpeechSynthesisUtterance(tk.map(spoken).join("")); u.voice = v; u.lang = v.lang; u.rate = rate; u.pitch = pitch;
+  u.onstart = startTimers;
+  u.onboundary = e => { if (my !== gen || !(e.charIndex > 0)) return; byBoundary = true; let idx = 0; charStarts.forEach((s, i) => { if (e.charIndex >= s) idx = i; }); hl(idx); };
+  const fin = () => { timers.forEach(clearTimeout); done(); };
+  u.onend = fin; u.onerror = fin;
+  setTimeout(() => { if (my === gen && !started) startTimers(); }, 900);
+  synth.speak(u);
+}
+function sayHe(text) {
+  const v = heVoice(); if (!v || !synth) return;
+  try { synth.cancel(); const u = new SpeechSynthesisUtterance(text); u.voice = v; u.lang = v.lang; u.pitch = CHARS[S.settings.ch].pitch; synth.speak(u); } catch {}
+}
+
+/* ---------- avatar ---------- */
+function avatarSVG(id) {
+  const c = CHARS[id], kid = id === "yuta";
+  const hair = {
+    bob: "M28 58 C26 28 44 18 60 18 C78 18 94 28 92 58 L92 76 C88 78 85 72 85 62 C85 46 77 37 60 37 C44 37 35 45 35 62 C35 72 32 78 28 76 Z",
+    short: "M30 52 C29 27 45 18 62 18 C80 18 92 30 90 52 C86 41 77 34 61 34 C46 34 36 41 30 52 Z",
+    bowl: "M28 56 C26 26 45 16 60 16 C76 16 94 26 92 56 C85 47 73 43 60 43 C47 43 35 47 28 56 Z"
+  }[c.hair];
+  const by = kid ? 100 : 94;
+  return `<svg viewBox="0 0 120 132" role="img" aria-label="${esc(c.name)}">
+    <path d="M18 132 C18 ${by + 10} 38 ${by} 60 ${by} C82 ${by} 102 ${by + 10} 102 132 Z" fill="${c.shirt}"/>
+    <rect x="52" y="${kid ? 82 : 80}" width="16" height="${by - 78}" rx="4" fill="#E9C4A6"/>
+    <ellipse cx="60" cy="56" rx="${c.r}" ry="${kid ? 32 : 33}" fill="#F2D2B6"/>
+    <path d="${hair}" fill="#2B2523"/>
+    <g class="eyes"><ellipse cx="48" cy="60" rx="3.2" ry="3.8" fill="#2A2A33"/><ellipse cx="72" cy="60" rx="3.2" ry="3.8" fill="#2A2A33"/></g>
+    <path d="M42 51 Q48 48 54 51 M66 51 Q72 48 78 51" stroke="#2B2523" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="41" cy="70" r="5" fill="#E89A92" opacity=".35"/><circle cx="79" cy="70" r="5" fill="#E89A92" opacity=".35"/>
+    <ellipse class="mouth" cx="60" cy="76" rx="6" ry="2.6" fill="#9A4040"/>
+  </svg>`;
+}
+
+/* ---------- content: 10 conversations per topic ---------- */
+const expand = s => s.split(" / ").map(p => { p = p.trim(); return p[0] === "~" ? (MAC[p.slice(1)] || p) : p; }).join(" / ");
+function parseDSL(text) {
+  const out = {}; let t = null, c = null;
+  for (const raw of text.split("\n")) {
+    const line = raw.trim(); if (!line || line.startsWith("//")) continue;
+    const k = line[0], rest = line.slice(2).trim();
+    if (k === "@") { const [id, title, role] = line.slice(1).split("|"); t = out[id] = { id, title, role, convs: [] }; continue; }
+    if (k === "#") { c = { title: rest, role: t.role, tip: "", words: [], dialog: [] }; t.convs.push(c); continue; }
+    if (!c) continue;
+    if (k === "r") c.role = rest;
+    else if (k === "w") c.words = rest.split(" ; ").map(tok);
+    else if (k === "t") c.tip = rest;
+    else if (k === "n") { const [a, tr] = rest.split(" = "); c.dialog.push({ who: "npc", toks: toks(expand(a)), tr: (tr || "").trim() }); }
+    else if (k === "u" || k === "x") {
+      const [a, tr, why] = rest.split(" = ");
+      const o = { toks: toks(expand(a)), tr: (tr || "").trim(), ok: k === "u", why: (why || "").trim() };
+      const last = c.dialog[c.dialog.length - 1];
+      if (last && last.who === "user") last.opts.push(o); else c.dialog.push({ who: "user", opts: [o] });
+    }
+  }
+  return out;
+}
+function fromRaw(id) {
+  const r = RAW[id];
+  return {
+    title: RAW_TITLES[id], role: r.role, tip: r.tip, words: r.words.map(tok),
+    dialog: r.dialog.map(st => st[0] === "n"
+      ? { who: "npc", toks: toks(st[1]), tr: st[2] }
+      : { who: "user", opts: st[1].map(o => ({ toks: toks(o[0]), tr: o[1], ok: !!o[2], why: o[3] || "" })) })
+  };
+}
+const hash = s => { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; };
+function shuffle(a, seed) { const r = a.slice(); let h = seed || 1; for (let i = r.length - 1; i > 0; i--) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; h = (h + 0x9e3779b9) >>> 0; const j = h % (i + 1); [r[i], r[j]] = [r[j], r[i]]; } return r; }
+// every answer step gets three options: a missing one is taken from another topic's correct answers
+function finalize(topics) {
+  const pool = [];
+  for (const t of Object.values(topics)) for (const c of t.convs) for (const s of c.dialog) if (s.who === "user") for (const o of s.opts) if (o.ok && o.toks.length >= 3) pool.push({ ...o, topic: t.id });
+  for (const t of Object.values(topics)) t.convs.forEach((c, ci) => c.dialog.forEach((s, si) => {
+    if (s.who !== "user") return;
+    let h = hash(`${t.id}:${ci}:${si}`);
+    const right = s.opts.find(o => o.ok);
+    const have = new Set(s.opts.map(o => jaStr(o.toks)));
+    const cands = pool.filter(p => p.topic !== t.id && !have.has(jaStr(p.toks)));
+    while (s.opts.length < 3 && cands.length && right) {
+      const p = cands.splice(h % cands.length, 1)[0]; h = Math.imul(h, 31) + 7 >>> 0;
+      s.opts.push({ toks: p.toks, tr: p.tr, ok: false, why: `התשובה הזו פירושה "${p.tr}", והיא לא מתאימה כאן. התשובה המתאימה: ${jaStr(right.toks)} (${heTr(right.toks.map(x => x.ro).join(" "))}).` });
+    }
+    s.opts = shuffle(s.opts, h);
+  }));
+  return topics;
+}
+const BUILT = (() => {
+  const T = parseDSL(document.getElementById("dsl").textContent);
+  for (const id of Object.keys(RAW_TITLES)) T[id].convs.unshift(fromRaw(id));
+  return finalize(T);
+})();
+
+// general etiquette tips, for word rounds that mix topics
+const ETIQ = [
+  "משתחווים קלות כשאומרים תודה או סליחה. ככל שההשתחוות עמוקה יותר, היא מנומסת יותר.",
+  "בבית, בריוקאן ובחלק מהמסעדות חולצים נעליים. מדרגה בכניסה וארון נעליים הם הסימן.",
+  "מדברים בשקט במקומות ציבוריים, במיוחד ברכבת, באוטובוס ובמקדשים.",
+  "לא אוכלים תוך כדי הליכה ברחוב. אוכלים ליד הדוכן או עומדים בצד.",
+  "על מדרגות נעות עומדים בצד אחד: בטוקיו בצד שמאל ובאוסקה בצד ימין.",
+  "כרטיס ביקור מקבלים בשתי ידיים, מסתכלים עליו רגע ולא מכניסים אותו מיד לכיס.",
+  "מעשנים רק באזורים מסומנים. בהרבה ערים ביפן אסור לעשן ברחוב.",
+  "את האשפה לוקחים איתכם, כי כמעט אין פחים ברחוב.",
+  "ביפן לא משאירים טיפ, לא במסעדה, לא במונית ולא במלון.",
+  "באונסן מתרחצים היטב בישיבה לפני שנכנסים למים."
+];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+
+/* ---------- state ---------- */
+let S = store.get("state", null);
+if (!S) {
+  // first visit: an example of yesterday's lesson so the daily review has something to show
+  S = {
+    settings: { ja: true, furi: true, ro: true, hetr: true, tr: false, speed: 1, avatar: true, ch: "haruka" },
+    words: {}, days: [YESTERDAY], lessons: [{ date: YESTERDAY, scn: "airport", items: ["空港", "パスポート", "出口", "トイレ"], example: true }],
+    done: {}, custom: [], flight: addDays(TODAY, 24), goal: { date: TODAY, n: 0 }
+  };
+  for (const k of S.lessons[0].items) {
+    const w = RAW.airport.words.map(tok).find(x => x.ja === k);
+    S.words[k] = { ...w, scn: "airport", box: 1, due: TODAY, wrong: 0, rated: true, added: YESTERDAY, example: true };
+  }
+}
+// migrations from the one-conversation version
+for (const k of Object.keys(S.done || {})) if (!Array.isArray(S.done[k])) S.done[k] = S.done[k] ? [0] : [];
+S.done ||= {}; S.pos ||= {}; S.free ||= [];
+S.trip ||= { hotel: "", addr: "", alg: [], pork: false, veg: false };
+S.custom = (S.custom || []).map(c => c.convs ? c : { id: c.id, custom: true, title: c.title, role: c.role, convs: [{ title: c.title, role: c.role, tip: c.tip, words: c.words, dialog: c.dialog }] });
+if (S.goal.date !== TODAY) S.goal = { date: TODAY, n: 0 };
+const save = () => store.set("state", S);
+
+let SCN = {};
+function topicOf(t) {
+  const seen = new Set(), words = [];
+  for (const c of t.convs) for (const w of c.words) if (!seen.has(w.ja)) { seen.add(w.ja); words.push(w); }
+  return { ...t, words, tips: t.convs.map(c => c.tip).filter(Boolean) };
+}
+function loadScenarios() {
+  SCN = {};
+  for (const id of ORDER) SCN[id] = topicOf(BUILT[id]);
+  for (const c of S.custom) SCN[c.id] = topicOf(c);
+  SCN[FREE] = { id: FREE, free: true, title: "שיחה חופשית", role: "שיחה חופשית", convs: [], words: [], tips: ETIQ };
+}
+loadScenarios();
+const learnIds = () => [...ORDER, ...S.custom.map(c => c.id)];
+const scnIds = () => [...learnIds(), FREE];
+const convIdx = id => Math.min(S.pos[id] || 0, Math.max(SCN[id].convs.length - 1, 0));
+const curConv = () => SCN[cur].convs[convIdx(cur)];
+const doneList = id => S.done[id] || [];
+
+/* ---------- progress ---------- */
+function touch(scnId, w) {
+  if (!S.days.includes(TODAY)) S.days.push(TODAY);
+  let L = S.lessons[S.lessons.length - 1];
+  if (!L || L.date !== TODAY || L.scn !== scnId) { L = { date: TODAY, scn: scnId, items: [] }; S.lessons.push(L); if (S.lessons.length > 30) S.lessons.shift(); }
+  if (w && !L.items.includes(w.ja) && L.items.length < 8) L.items.push(w.ja);
+  S.goal.n++; save();
+}
+function addWord(w, scnId) {
+  if (!S.words[w.ja]) S.words[w.ja] = { ja: w.ja, kana: w.kana, ro: w.ro, he: w.he, scn: scnId, box: 0, due: TODAY, wrong: 0, rated: false, added: TODAY };
+  save();
+}
+const INTERVAL = [0, 1, 2, 4, 7, 14];
+function rate(w, scnId, know) {
+  addWord(w, scnId); const e = S.words[w.ja];
+  e.rated = true; e.example = false;
+  if (know) e.box = Math.min(e.box + 1, 5); else { e.box = 0; e.wrong++; }
+  e.due = addDays(TODAY, INTERVAL[e.box]);
+  touch(scnId, w);
+}
+function status(e) {
+  if (!e.rated) return "חדשה";
+  if (e.box >= 3) return "שולט";
+  if (e.wrong >= 2) return "קשה";
+  return "בתרגול";
+}
+function streak() {
+  const set = new Set(S.days); let d = set.has(TODAY) ? TODAY : YESTERDAY, n = 0;
+  while (set.has(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function readiness(id) {
+  const sc = SCN[id]; if (!sc.words.length) return 0;
+  const known = sc.words.filter(w => (S.words[w.ja]?.box || 0) >= 2).length;
+  return Math.round((known / sc.words.length) * 60 + (doneList(id).length / sc.convs.length) * 40);
+}
+const due = () => Object.values(S.words).filter(e => e.due <= TODAY);
+
+/* ---------- app state ---------- */
+let tab = "today", cur = "airport";
+let conv = null, cardsState = null, cardScope = "conv", review = null, filt = { q: "", scn: "", st: "", sort: "new" };
+let pb = { q: "", scn: "" }, freeCur = null, fz = { pending: false, err: "", draft: "", tr: {}, ctl: null };
+function resetConv() { conv = { i: 0, log: [], wrong: -1, help: null, showTr: false, hint: false, started: false, finished: false }; }
+resetConv();
+
+document.querySelector("nav").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  stopSpeech(); tab = b.dataset.tab;
+  document.querySelectorAll("nav button").forEach(x => x.setAttribute("aria-selected", x === b));
+  render(); window.scrollTo(0, 0);
+});
+function go(t) { document.querySelector(`nav button[data-tab="${t}"]`).click(); }
+addEventListener("online", () => { if (tab === "trip" || (tab === "talk" && cur === FREE)) render(); });
+addEventListener("offline", () => { if (tab === "trip" || (tab === "talk" && cur === FREE)) render(); });
+const online = () => navigator.onLine !== false;
+
+function chipsHTML() {
+  return `<div class="chips" role="group" aria-label="נושא">${scnIds().map(id => `<button class="chip${id === FREE ? " free" : ""}" data-scn="${id}" aria-pressed="${id === cur}">${esc(SCN[id].title)}</button>`).join("")}
+    <button class="chip add" data-new="1">+ נושא משלך</button></div>`;
+}
+function bindChips(root) {
+  root.querySelectorAll("[data-scn]").forEach(b => b.onclick = () => { stopSpeech(); cur = b.dataset.scn; resetConv(); cardsState = null; render(); });
+  const n = root.querySelector("[data-new]"); if (n) n.onclick = openNewTopic;
+}
+
+function render() {
+  const v = $("#view");
+  const views = { today: [todayHTML, bindToday], talk: cur === FREE ? [freeHTML, bindFree] : [talkHTML, bindTalk], cards: [cardsHTML, bindCards], mine: [mineHTML, bindMine], trip: [tripHTML, bindTrip] }[tab];
+  v.innerHTML = views[0]();
+  bindChips(v);
+  views[1](v);
+}
+
+/* ---------- TODAY ---------- */
+function prevLesson() { for (let i = S.lessons.length - 1; i >= 0; i--) if (S.lessons[i].date < TODAY && S.lessons[i].items.length) return S.lessons[i]; return null; }
+function todayHTML() {
+  const days = S.flight ? Math.round((new Date(S.flight + "T12:00:00") - new Date(TODAY + "T12:00:00")) / 864e5) : null;
+  const goalN = Math.min(S.goal.n, 15);
+  const L = prevLesson(); const d = due();
+  let rev = "";
+  if (L) {
+    const items = L.items.map(k => S.words[k]).filter(Boolean).slice(0, 5);
+    const when = L.date === YESTERDAY ? "אתמול" : L.date.split("-").reverse().join(".");
+    if (review && review.done) {
+      rev = `<div class="he-bubble good">חזרה הושלמה: ${review.score} מתוך ${review.qs.length} נכונות. אפשר להמשיך לשיעור חדש.</div>${review.tip ? `<p class="tip" style="margin:0"><b>טיפ תרבותי:</b> ${esc(review.tip)}</p>` : ""}`;
+    } else if (review) {
+      const q = review.qs[review.k];
+      rev = `<div class="counter">שאלה ${review.k + 1} מתוך ${review.qs.length}</div>
+        <div class="bubble" style="text-align:center">${caption([q.w], "", { tap: false })}</div>
+        <div class="q4">${q.choices.map((c, i) => `<button data-a="${i}" class="${review.picked == null ? "" : (c === q.w.he ? "right" : (i === review.picked ? "wrong" : ""))}" ${review.picked != null ? "disabled" : ""}>${esc(c)}</button>`).join("")}</div>
+        ${review.picked != null ? `<button class="btn primary" id="rvNext">${review.k + 1 < review.qs.length ? "הבא" : "סיום"}</button>` : ""}`;
+    } else {
+      rev = `<div class="wl">${items.map(e => `<div class="w"><div class="j">${jaHTML(e, S.settings.furi)}</div><div class="m">${esc(e.he)}</div><div class="r">${esc(e.ro)} · ${esc(heTr(e.ro))}</div><div class="act"><button class="play" data-say='${esc(JSON.stringify(e))}' aria-label="השמעה">${PLAY_ICON}</button></div></div>`).join("")}</div>
+        <div class="row"><button class="btn primary" id="rvStart">תרגול חוזר קצר</button><button class="btn" id="rvSkip">דלג לשיעור חדש</button></div>`;
+    }
+    rev = `<section class="panel"><div class="row" style="justify-content:space-between"><h2>חזרה על השיעור הקודם</h2>${L.example ? '<span class="tag">דוגמה</span>' : ""}</div>
+      <p class="muted small" style="margin:0">${when}: ${esc(SCN[L.scn]?.title || "")}${L.example ? ". כך תיראה החזרה בכל יום חדש." : ""}</p>${rev}</section>`;
+  }
+  return `
+  <section class="pass" aria-label="כרטיס הטיסה שלך">
+    <div class="main">
+      <span class="muted small">טיסה ליפן</span>
+      <div class="route">TLV<span>→</span>NRT</div>
+      <label class="small muted">תאריך טיסה <input type="date" id="flight" value="${esc(S.flight || "")}"></label>
+    </div>
+    <div class="stub"><b>${days == null ? "?" : Math.max(days, 0)}</b><span class="small">ימים לטיסה</span></div>
+  </section>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>היעד היומי</h2><span class="tag ${streak() ? "good" : ""}">רצף: ${streak()} ימים</span></div>
+    <div class="goal"><div class="bar"><i style="width:${goalN / 15 * 100}%"></i></div><span class="small muted">${goalN} מתוך 15 תרגולים היום</span></div>
+    ${d.length ? `<div class="row" style="justify-content:space-between"><span>${d.length} מילים מחכות לחזרה היום</span><button class="btn soft" id="dueGo">לחזרה</button></div>` : `<span class="small muted">אין מילים שמחכות לחזרה היום.</span>`}
+  </section>
+  ${rev}
+  <section class="panel">
+    <h2>כמה אתה מוכן לטיול</h2>
+    <div class="ready">${learnIds().map(id => { const p = readiness(id); return `<button data-go="${id}"><span>${esc(SCN[id].title)} <span class="muted small">· ${doneList(id).length}/${SCN[id].convs.length} שיחות</span></span><b>${p}%</b><span class="bar"><i style="width:${p}%"></i></span></button>`; }).join("")}</div>
+    <p class="note" style="margin:0">המוכנות מחושבת מהמילים שאתה שולט בהן ומהשיחות שהשלמת. לחיצה על נושא פותחת את השיחה הבאה שלו.</p>
+  </section>`;
+}
+function bindToday(v) {
+  v.querySelector("#flight").onchange = e => { S.flight = e.target.value || null; save(); render(); };
+  const dg = v.querySelector("#dueGo"); if (dg) dg.onclick = () => { cardsState = { deck: due().map(e => ({ w: e, scn: e.scn })), idx: 0, flip: false, title: "חזרה יומית", tip: pick(ETIQ), fixed: true }; go("cards"); };
+  v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => {
+    cur = b.dataset.go; const sc = SCN[cur], dn = doneList(cur);
+    const next = sc.convs.findIndex((_, i) => !dn.includes(i)); if (next >= 0) S.pos[cur] = next;
+    resetConv(); cardsState = null; go("talk");
+  });
+  v.querySelectorAll("[data-say]").forEach(b => b.onclick = () => play([JSON.parse(b.dataset.say)], { speed: S.settings.speed }));
+  const L = prevLesson();
+  const st = v.querySelector("#rvStart");
+  if (st) st.onclick = () => {
+    const items = L.items.map(k => S.words[k]).filter(Boolean).slice(0, 5);
+    const pool = [...new Set(Object.values(SCN).flatMap(s => s.words.map(w => w.he)))];
+    review = { k: 0, score: 0, picked: null, tip: pick(SCN[L.scn]?.tips?.length ? SCN[L.scn].tips : ETIQ), qs: items.map(w => { const wrong = pool.filter(x => x !== w.he).sort(() => Math.random() - .5).slice(0, 3); return { w, choices: [w.he, ...wrong].sort(() => Math.random() - .5) }; }) };
+    render();
+  };
+  const sk = v.querySelector("#rvSkip"); if (sk) sk.onclick = () => { review = { done: true, score: 0, qs: [], skipped: true }; cur = SCN[L.scn] ? L.scn : "airport"; resetConv(); go("talk"); };
+  v.querySelectorAll("[data-a]").forEach(b => b.onclick = () => {
+    const q = review.qs[review.k]; review.picked = +b.dataset.a;
+    const ok = q.choices[review.picked] === q.w.he; if (ok) review.score++;
+    rate(q.w, q.w.scn || L.scn, ok); render();
+  });
+  const nx = v.querySelector("#rvNext"); if (nx) nx.onclick = () => { review.picked = null; review.k++; if (review.k >= review.qs.length) review.done = true; render(); };
+}
+
+/* ---------- TALK (scripted topics) ---------- */
+const noVoiceHTML = () => (voicesChecked && !jaVoice()) ? `<div class="he-bubble bad">אין צליל במכשיר הזה: לא נמצא קול יפני. ההבלטה תעבוד בלי צליל. בטלפון אנדרואיד פתחו את הדמו בדפדפן Chrome, ואם צריך התקינו קול יפני בהגדרות: ניהול כללי ← המרת טקסט לדיבור.</div>` : "";
+const speedHTML = () => `<div class="seg" role="group" aria-label="מהירות דיבור">${["איטי", "בינוני", "רגיל"].map((l, i) => `<button data-sp="${i}" aria-pressed="${S.settings.speed === i}">${l}</button>`).join("")}</div>`;
+const wchipHTML = w => `<button class="wchip" data-w='${esc(JSON.stringify(w))}'><span class="j" lang="ja">${esc(w.ja)}</span><span class="m">${esc(w.he)}</span></button>`;
+function talkHTML() {
+  const sc = SCN[cur], st = S.settings, ch = CHARS[st.ch], ci = convIdx(cur), c = sc.convs[ci], dn = doneList(cur);
+  const line = c.dialog[conv.i], next = c.dialog[conv.i + 1];
+  const av = st.avatar ? `<div class="av${speaking ? " speaking" : ""}">${avatarSVG(st.ch)}<span class="who">${esc(ch.name)}</span><span class="role">בתפקיד: ${esc(c.role || sc.role)}</span></div>` : "";
+  const opts = (!conv.finished && next && next.who === "user") ? `
+    <section class="panel">
+      <div class="row" style="justify-content:space-between"><h2>מה תענה?</h2><button class="btn soft" id="hint">${conv.hint ? "הסתר תרגום" : "רמז: הצג תרגום"}</button></div>
+      <div class="opts">${next.opts.map((o, i) => `<button class="opt${conv.wrong === i ? " wrong" : ""}" data-o="${i}">${caption(o.toks, o.tr, { tap: false, forceTr: conv.hint, hideTr: !conv.hint })}</button>`).join("")}</div>
+    </section>` : "";
+  const hasNext = ci + 1 < sc.convs.length;
+  const fin = conv.finished ? `
+    <section class="panel">
+      <div class="done"><div class="stamp" lang="ja" aria-hidden="true">済</div><div><h2>סיימת את שיחה ${ci + 1}</h2><p class="muted small" style="margin:0">המילים שלחצת עליהן נשמרו ב"המילים שלי".</p></div></div>
+      <div class="tipcard"><b>טיפ תרבותי ונימוסים</b><p style="margin:0">${esc(c.tip)}</p></div>
+      <div class="row">${hasNext ? `<button class="btn primary" id="nextConv">לשיחה הבאה</button>` : ""}<button class="btn${hasNext ? "" : " primary"}" id="again">שיחה מחדש</button><button class="btn" id="toCards">לתרגול המילים</button></div>
+    </section>` : "";
+  return `${chipsHTML()}
+  <h2 class="convtitle">שיחה ${ci + 1}: ${esc(c.title)}</h2>
+  ${conv.stageHidden ? `<button class="btn soft" id="showStage" style="align-self:flex-start">הצג שוב את חלונית השיחה</button>` : `<section class="panel">
+    <div class="stage${st.avatar ? "" : " noav"}">
+      ${av}
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+        <div class="bubble" id="npcLine">${caption(line.toks, line.tr, { forceTr: conv.showTr })}</div>
+        ${conv.help ? `<div class="he-bubble ${conv.help.kind || ""}">${esc(conv.help.text)}</div>` : ""}
+      </div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn primary" id="playLine">${conv.started ? "השמע שוב" : "התחל שיחה"}</button>
+      ${speedHTML()}
+    </div>
+    <div class="helps"><button class="btn soft" id="slower">לאט יותר</button><button class="btn soft" id="trans">${conv.showTr ? "הסתר תרגום" : "תרגם"}</button><button class="btn soft" id="avToggle">${st.avatar ? "הסתר דמות" : "הצג דמות"}</button></div>
+    <p class="note" style="margin:0">לחיצה על מילה בכתובית מציגה את הפירוש ומוסיפה אותה ל"המילים שלי". רוצים לשאול או לדבר בחופשיות? בנושא "שיחה חופשית".</p>
+    ${noVoiceHTML()}
+  </section>`}
+  ${opts}${fin}
+  ${conv.log.length ? `<section class="panel"><h2>${conv.finished ? "השיחה המלאה" : "השיחה עד עכשיו"}</h2><div class="log">${conv.log.map((l, i) => `<div class="l${l.me ? " me" : ""}"><div class="lt"><div class="j" lang="ja" id="lg${i}">${l.toks.map((t, k) => `<span class="tk" data-i="${k}">${esc(t.ja)}</span>`).join("")}</div><div class="ht">${esc(heTr(l.toks.map(t => t.ro).join(" ")))}</div><div class="muted small">${esc(l.tr)}</div></div><button class="play" data-lg="${i}" aria-label="השמע שוב את המשפט">${PLAY_ICON}</button></div>`).join("")}</div></section>` : ""}
+  <section class="panel">
+    <div class="row" style="justify-content:space-between;align-items:baseline"><h2>שיחות ומילים בנושא</h2><span class="counter">${dn.length} מתוך ${sc.convs.length} הושלמו</span></div>
+    <div class="nums" role="group" aria-label="בחירת שיחה">${sc.convs.map((x, i) => `<button data-cv="${i}" aria-pressed="${i === ci}" class="${dn.includes(i) ? "done" : ""}" title="${esc(x.title)}" aria-label="שיחה ${i + 1}: ${esc(x.title)}${dn.includes(i) ? " (הושלמה)" : ""}">${i + 1}</button>`).join("")}</div>
+    <div class="small muted">מילים חדשות בשיחה ${ci + 1}:</div>
+    <div class="wchips">${c.words.map(wchipHTML).join("")}</div>
+  </section>`;
+}
+function bindSpeed(v) { v.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { S.settings.speed = +b.dataset.sp; save(); render(); }); }
+function bindTalk(v) {
+  const c = curConv(), line = c.dialog[conv.i], el = () => $("#npcLine");
+  const pitch = () => CHARS[S.settings.ch].pitch;
+  const say = sp => play(line.toks, { el: el(), speed: sp, pitch: pitch() });
+  const pl = v.querySelector("#playLine"); if (pl) pl.onclick = () => { if (!conv.started) { conv.started = true; render(); } say(S.settings.speed); };
+  bindSpeed(v);
+  const sl = v.querySelector("#slower"); if (sl) sl.onclick = () => {
+    conv.started = true; conv.help = { text: "בטח. אגיד את זה לאט יותר, מילה אחרי מילה." }; render();
+    sayHe(conv.help.text); setTimeout(() => play(line.toks, { el: el(), speed: 0, pitch: pitch() }), heVoice() ? 2600 : 200);
+  };
+  const tr = v.querySelector("#trans"); if (tr) tr.onclick = () => { conv.showTr = !conv.showTr; render(); };
+  const at = v.querySelector("#avToggle"); if (at) at.onclick = () => { S.settings.avatar = !S.settings.avatar; save(); render(); };
+  const hint = v.querySelector("#hint"); if (hint) hint.onclick = () => { conv.hint = !conv.hint; render(); };
+  v.querySelectorAll("[data-o]").forEach(b => b.onclick = () => choose(+b.dataset.o, b));
+  v.querySelectorAll("[data-cv]").forEach(b => b.onclick = () => { stopSpeech(); S.pos[cur] = +b.dataset.cv; save(); resetConv(); cardsState = null; render(); window.scrollTo(0, 0); });
+  const nc = v.querySelector("#nextConv"); if (nc) nc.onclick = () => { S.pos[cur] = convIdx(cur) + 1; save(); resetConv(); cardsState = null; render(); window.scrollTo(0, 0); };
+  const ag = v.querySelector("#again"); if (ag) ag.onclick = () => { resetConv(); render(); };
+  const tc = v.querySelector("#toCards"); if (tc) tc.onclick = () => { cardsState = null; cardScope = "conv"; go("cards"); };
+  v.querySelectorAll("[data-lg]").forEach(b => b.onclick = () => { const l = conv.log[+b.dataset.lg]; play(l.toks, { el: $("#lg" + b.dataset.lg), pitch: l.me ? 1 : pitch() }); });
+  const ss = v.querySelector("#showStage"); if (ss) ss.onclick = () => { conv.stageHidden = false; render(); };
+  v.querySelectorAll("button.tk, .wchip").forEach(b => b.onclick = () => openWord(JSON.parse(b.dataset.w), cur));
+}
+function markDone(id, i) { const d = S.done[id] = doneList(id); if (!d.includes(i)) d.push(i); save(); }
+function choose(i, btn) {
+  const c = curConv(), ci = convIdx(cur), line = c.dialog[conv.i], o = c.dialog[conv.i + 1].opts[i];
+  conv.started = true;
+  if (!o.ok) { conv.wrong = i; conv.help = { kind: "bad", text: "כמעט. " + o.why }; render(); sayHe(conv.help.text); return; }
+  conv.log.push({ toks: line.toks, tr: line.tr }, { toks: o.toks, tr: o.tr, me: true });
+  touch(cur, null);
+  conv.wrong = -1; conv.help = { kind: "good", text: "נכון!" }; conv.hint = false; conv.showTr = false;
+  play(o.toks, { el: btn, speed: S.settings.speed, pitch: 1, onEnd: () => {
+    conv.i += 2; conv.help = null;
+    const mine = conv, hideLater = () => setTimeout(() => { if (conv === mine && conv.finished) { conv.stageHidden = true; if (tab === "talk") render(); } }, 5000);
+    if (!c.dialog[conv.i]) { conv.i -= 2; conv.finished = true; markDone(cur, ci); render(); hideLater(); return; }
+    const last = !c.dialog[conv.i + 1], nl = c.dialog[conv.i];
+    if (last) { conv.finished = true; markDone(cur, ci); conv.log.push({ toks: nl.toks, tr: nl.tr }); }
+    render(); setTimeout(() => play(nl.toks, { el: $("#npcLine"), pitch: CHARS[S.settings.ch].pitch, onEnd: last ? hideLater : null }), 350);
+  } });
+}
+
+/* ---------- Claude ---------- */
+let samplePromise = null;
+const getSample = () => (samplePromise ||= (window.claude?.use ? window.claude.use("sample").catch(() => null) : Promise.resolve(null)));
+const SAMPLE_ERR = { not_granted: "לא התקבלה הרשאה להשתמש ב-Claude בדף הזה.", sampling_disabled: "Claude לא זמין בחשבון הזה.", rate_limited: "יותר מדי בקשות כרגע. נסה שוב בעוד רגע.", session_expired: "צריך להתחבר מחדש ל-Claude.", refused: "לא הצלחתי לענות על זה. נסה לנסח אחרת.", invalid_json: "התשובה לא הגיעה בפורמט הנכון. נסה שוב.", offline: "אין חיבור לאינטרנט כרגע.", usage_limit: "הגעת למגבלת השימוש. נסה שוב מאוחר יותר." };
+const errText = e => SAMPLE_ERR[e?.code] || (!online() ? SAMPLE_ERR.offline : "משהו השתבש בתקשורת. נסה שוב.");
+const TOKEN_RULES = `TOKEN = {"ja":"one word or particle","ro":"its Hepburn romaji","he":"short Hebrew gloss","kana":"hiragana reading; REQUIRED whenever ja contains kanji, else empty"}.
+Split sentences into words; particles (は を に で へ も の が と) are separate tokens; attach punctuation 。、？ to the previous token's ja and . , ? to its ro. Particles in romaji: は=wa, を=o, へ=e.`;
+const normTok = t => ({ ja: String(t?.ja || "").trim(), ro: String(t?.ro || "").trim(), he: String(t?.he || "").trim(), kana: /[㐀-鿿]/.test(String(t?.ja || "")) ? String(t?.kana || "").trim() : "" });
+const normToks = a => (Array.isArray(a) ? a : []).map(normTok).filter(t => t.ja && t.ro);
+
+/* ---------- FREE CHAT ---------- */
+const CHAR_EN = { haruka: "Haruka, a friendly Japanese woman in her thirties", takeshi: "Takeshi, a friendly Japanese man in his forties", yuta: "Yuta, a cheerful Japanese boy about ten years old" };
+const curChat = () => S.free.find(f => f.id === freeCur) || null;
+function freeHTML() {
+  const st = S.settings, ch = CHARS[st.ch], chat = curChat(), msgs = chat ? chat.msgs : [];
+  const av = st.avatar ? `<div class="av${speaking ? " speaking" : ""}">${avatarSVG(st.ch)}<span class="who">${esc(ch.name)}</span><span class="role">שיחה חופשית</span></div>` : "";
+  const msgHTML = (m, i) => m.me
+    ? `<div class="msg me"><div>${esc(m.text)}</div>${m.learner ? `<div class="learn"><div class="small muted">ביפנית אומרים:</div><div id="l${i}">${caption(m.learner.toks, m.learner.tr, { forceTr: false, hideTr: true })}</div><div class="mini"><button class="btn soft" data-pl="${i}">השמעה</button><button class="btn soft" data-pls="${i}">לאט</button></div></div>` : ""}</div>`
+    : `<div class="msg npc"><div class="bubble" id="m${i}">${caption(m.toks, m.tr, { forceTr: !!fz.tr[i] })}</div><div class="mini"><button class="btn soft" data-pn="${i}">השמעה</button><button class="btn soft" data-pns="${i}">לאט</button><button class="btn soft" data-tr="${i}">${fz.tr[i] ? "הסתר תרגום" : "תרגם"}</button></div>${m.note ? `<div class="he-bubble">${esc(m.note)}</div>` : ""}</div>`;
+  return `${chipsHTML()}
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>שיחה חופשית עם ${esc(ch.name)}</h2><button class="btn soft" id="fNew">שיחה חדשה</button></div>
+    <p class="muted small" style="margin:0">אתם פותחים את השיחה. כתבו בעברית או ביפנית, ותקבלו תשובה ביפנית פשוטה, וגם איך אומרים ביפנית את מה שכתבתם.</p>
+    ${S.free.length ? `<div class="small muted">השיחות האחרונות שלך (${S.free.length} מתוך 10):</div><div class="chips">${S.free.map(f => `<button class="chip" data-f="${esc(f.id)}" aria-pressed="${f.id === freeCur}">${esc(f.title)}</button>`).join("")}</div>` : ""}
+  </section>
+  <section class="panel">
+    <div class="stage${st.avatar ? "" : " noav"}">
+      ${av}
+      <div class="chat" id="chat">
+        ${msgs.length ? msgs.map(msgHTML).join("") : `<div class="bubble muted">הקלידו משפט ראשון כדי להתחיל. למשל: "שלום, מה שלומך?" או "こんにちは".</div>`}
+        ${fz.pending ? `<div class="he-bubble">${esc(ch.name)} כותב/ת...</div>` : ""}
+        ${fz.err ? `<div class="he-bubble bad">${esc(fz.err)}</div>` : ""}
+      </div>
+    </div>
+    <form class="ask" id="fForm"><input id="fIn" placeholder="כתבו כאן בעברית או ביפנית" autocomplete="off" value="${esc(fz.draft)}" ${fz.pending ? "disabled" : ""}><button class="btn primary" type="submit" ${fz.pending ? "hidden" : ""}>שלח</button><button class="btn" type="button" id="fStop" ${fz.pending ? "" : "hidden"}>עצור</button></form>
+    <div class="row" style="justify-content:space-between"><span class="note">לחיצה על מילה שומרת אותה ב"המילים שלי".</span>${speedHTML()}</div>
+    ${online() ? "" : `<div class="he-bubble bad">אין חיבור לאינטרנט. שיחה חופשית צריכה חיבור, אבל השיחות שכבר נשמרו פתוחות לקריאה ולהשמעה.</div>`}
+    ${noVoiceHTML()}
+  </section>`;
+}
+function bindFree(v) {
+  const chat = curChat(), pitch = CHARS[S.settings.ch].pitch;
+  bindSpeed(v);
+  v.querySelector("#fNew").onclick = () => { stopSpeech(); freeCur = null; fz = { ...fz, err: "", tr: {} }; render(); $("#fIn")?.focus(); };
+  v.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { stopSpeech(); freeCur = b.dataset.f; fz = { ...fz, err: "", tr: {} }; render(); });
+  const inp = v.querySelector("#fIn"); inp.oninput = e => { fz.draft = e.target.value; };
+  v.querySelector("#fForm").onsubmit = e => { e.preventDefault(); const t = inp.value.trim(); if (t && !fz.pending) freeSend(t); };
+  const sp = v.querySelector("#fStop"); if (sp) sp.onclick = () => fz.ctl && fz.ctl.abort();
+  if (chat) {
+    const m = i => chat.msgs[+i];
+    v.querySelectorAll("[data-pn]").forEach(b => b.onclick = () => play(m(b.dataset.pn).toks, { el: $("#m" + b.dataset.pn), pitch }));
+    v.querySelectorAll("[data-pns]").forEach(b => b.onclick = () => play(m(b.dataset.pns).toks, { el: $("#m" + b.dataset.pns), speed: 0, pitch }));
+    v.querySelectorAll("[data-pl]").forEach(b => b.onclick = () => play(m(b.dataset.pl).learner.toks, { el: $("#l" + b.dataset.pl), pitch: 1 }));
+    v.querySelectorAll("[data-pls]").forEach(b => b.onclick = () => play(m(b.dataset.pls).learner.toks, { el: $("#l" + b.dataset.pls), speed: 0, pitch: 1 }));
+    v.querySelectorAll("[data-tr]").forEach(b => b.onclick = () => { fz.tr[b.dataset.tr] = !fz.tr[b.dataset.tr]; render(); });
+  }
+  v.querySelectorAll("button.tk").forEach(b => b.onclick = () => openWord(JSON.parse(b.dataset.w), FREE));
+  const box = v.querySelector("#chat"); if (box && chat && chat.msgs.length > 2) box.lastElementChild?.scrollIntoView({ block: "nearest" });
+}
+function freePrompt(chat) {
+  const ms = chat.msgs, last = ms[ms.length - 1];
+  const hist = ms.slice(-11, -1).map(m => m.me ? `Learner: ${m.learner ? jaStr(m.learner.toks) : m.text}` : `You: ${jaStr(m.toks)}`).join("\n");
+  return `You are ${CHAR_EN[chat.ch] || CHAR_EN.haruka}. You are chatting with a Hebrew-speaking beginner who is learning Japanese before a trip to Japan. The learner started the conversation.
+${hist ? `Conversation so far:\n${hist}\n` : ""}The learner's newest message (in Hebrew or Japanese): """${last.text.slice(0, 400)}"""
+Reply with only one JSON object:
+{"reply":{"tokens":[TOKEN...],"tr":"Hebrew translation of your reply"},"learner":{"tokens":[TOKEN...],"tr":"Hebrew translation"},"note":"..."}
+- reply: your next line, in simple polite Japanese (です/ます), one or two short sentences a beginner can follow. Stay in character, answer what they said, and keep the conversation going, usually with one simple question.
+- learner: how to say the learner's newest message naturally in simple Japanese. If they wrote Japanese, give the corrected version (or the same sentence if it was already right).
+- note: one short Hebrew sentence. If the learner's Japanese had a mistake, explain the fix; otherwise a small tip about one word or a cultural point in your reply. Any Japanese inside the note is followed by its Hebrew transliteration in parentheses.
+${TOKEN_RULES}`;
+}
+async function freeSend(text) {
+  let chat = curChat();
+  if (!chat) { chat = { id: "f" + Date.now(), date: TODAY, title: text.slice(0, 26), ch: S.settings.ch, msgs: [] }; S.free.unshift(chat); freeCur = chat.id; }
+  S.free = [chat, ...S.free.filter(f => f !== chat)].slice(0, 10);
+  chat.msgs.push({ me: true, text }); fz.draft = ""; fz.err = ""; fz.pending = true; save(); render();
+  const sample = await getSample();
+  if (!sample) { fz.pending = false; fz.err = "שיחה חופשית צריכה חיבור ל-Claude, והוא לא זמין בתצוגה הזו."; render(); return; }
+  fz.ctl = new AbortController();
+  try {
+    const d = await sample.json(freePrompt(chat), { modelTier: "default", effort: "low", cache: false, signal: fz.ctl.signal });
+    const reply = normToks(d?.reply?.tokens); if (!reply.length) throw { code: "invalid_json" };
+    const learner = normToks(d?.learner?.tokens);
+    const me = chat.msgs[chat.msgs.length - 1]; if (learner.length) me.learner = { toks: learner, tr: String(d.learner.tr || "") };
+    chat.msgs.push({ me: false, toks: reply, tr: String(d.reply.tr || ""), note: String(d.note || "").slice(0, 300) });
+    save(); touch(FREE, null); fz.pending = false;
+    if (tab === "talk" && cur === FREE && freeCur === chat.id) { render(); const i = chat.msgs.length - 1; play(reply, { el: $("#m" + i), pitch: CHARS[S.settings.ch].pitch }); }
+  } catch (e) {
+    fz.pending = false; fz.err = e?.code === "cancelled" ? "השליחה נעצרה. אפשר לכתוב שוב." : errText(e);
+    if (tab === "talk" && cur === FREE) render();
+  }
+}
+
+/* ---------- CARDS ---------- */
+function freshDeck() {
+  const sc = SCN[cur];
+  if (cur === FREE) return { deck: Object.values(S.words).filter(e => e.scn === FREE).map(e => ({ w: e, scn: FREE })), idx: 0, flip: false, title: "מילים מהשיחות החופשיות", tip: pick(ETIQ) };
+  const c = curConv(), ci = convIdx(cur);
+  const words = cardScope === "conv" ? c.words : sc.words;
+  return { deck: words.map(w => ({ w, scn: cur })), idx: 0, flip: false, title: cardScope === "conv" ? `${sc.title} · שיחה ${ci + 1}` : `${sc.title} · כל המילים`, tip: cardScope === "conv" && c.tip ? c.tip : pick(sc.tips.length ? sc.tips : ETIQ) };
+}
+function cardsHTML() {
+  if (!cardsState) cardsState = freshDeck();
+  const c = cardsState, item = c.deck[c.idx];
+  const scope = (!c.fixed && cur !== FREE) ? `<div class="seg two" role="group" aria-label="אילו מילים">${[["conv", "השיחה הנוכחית"], ["topic", "כל הנושא"]].map(([k, l]) => `<button data-scope="${k}" aria-pressed="${cardScope === k}">${l}</button>`).join("")}</div>` : "";
+  const head = `${chipsHTML()}${scope}<div class="row" style="justify-content:space-between"><h2>${esc(c.title)}</h2><span class="counter">${Math.min(c.idx + 1, c.deck.length)} מתוך ${c.deck.length}</span></div>`;
+  if (!c.deck.length) return `${head}<section class="panel"><p class="muted" style="margin:0">${cur === FREE ? "עוד אין מילים מהשיחה החופשית. לחצו על מילה בתשובה של הדמות כדי לשמור אותה." : "אין מילים לתרגול כאן."}</p></section>`;
+  if (!item) return `${head}<section class="panel" style="align-items:center;text-align:center"><div class="stamp" lang="ja" aria-hidden="true">済</div><h2>סיימת את הסבב</h2><p class="muted" style="margin:0">מילים שסימנת "עוד לא" יחזרו כבר היום. מילים שידעת יחזרו בעוד כמה ימים.</p>
+    <div class="tipcard" style="text-align:start;width:100%"><b>טיפ תרבותי ונימוסים</b><p style="margin:0">${esc(c.tip)}</p></div>
+    <div class="row"><button class="btn primary" id="again">עוד סבב</button><button class="btn" id="toTalk">לשיחה</button></div></section>`;
+  const w = item.w, st = S.settings;
+  return `${head}
+  <section class="panel">
+    <button class="card" id="card" aria-label="הפוך כרטיס">
+      ${st.ja ? `<div class="big" lang="ja" style="direction:ltr">${jaHTML(w, st.furi)}</div>` : ""}
+      ${st.ro ? `<div class="muted" style="direction:ltr">${esc(w.ro)}</div>` : ""}
+      ${st.hetr ? `<div class="muted">${esc(heTr(w.ro))}</div>` : ""}
+      ${c.flip ? `<div class="meaning">${esc(w.he)}</div>` : `<div class="note">לחצו על הכרטיס כדי לגלות את הפירוש</div>`}
+    </button>
+    <div class="row" style="justify-content:center"><button class="btn soft" id="say">השמעה</button><button class="btn soft" id="saySlow">השמעה איטית</button></div>
+    <div class="twin"><button class="btn no" id="no">עוד לא</button><button class="btn ok" id="yes">אני יודע</button></div>
+  </section>`;
+}
+function bindCards(v) {
+  const c = cardsState, item = c.deck[c.idx];
+  v.querySelectorAll("[data-scope]").forEach(b => b.onclick = () => { cardScope = b.dataset.scope; cardsState = null; render(); });
+  if (!item) {
+    const ag = v.querySelector("#again"); if (ag) ag.onclick = () => { cardsState = c.fixed ? { ...c, idx: 0, flip: false, tip: pick(ETIQ) } : null; render(); };
+    const tt = v.querySelector("#toTalk"); if (tt) tt.onclick = () => { resetConv(); go("talk"); };
+    return;
+  }
+  v.querySelector("#card").onclick = () => { c.flip = !c.flip; render(); };
+  v.querySelector("#say").onclick = () => play([item.w], { speed: 2 });
+  v.querySelector("#saySlow").onclick = () => play([item.w], { speed: 0 });
+  const nx = know => { rate(item.w, item.scn, know); c.idx++; c.flip = false; render(); };
+  v.querySelector("#yes").onclick = () => nx(true);
+  v.querySelector("#no").onclick = () => nx(false);
+}
+
+/* ---------- MY WORDS ---------- */
+function mineList() {
+  let L = Object.values(S.words);
+  const q = filt.q.trim().toLowerCase();
+  if (q) L = L.filter(e => [e.ja, e.kana, e.ro, e.he, heTr(e.ro)].some(x => (x || "").toLowerCase().includes(q)));
+  if (filt.scn) L = L.filter(e => e.scn === filt.scn);
+  if (filt.st) L = L.filter(e => status(e) === filt.st);
+  const sorters = { new: (a, b) => (b.added || "").localeCompare(a.added || ""), hard: (a, b) => (b.wrong - a.wrong) || (a.box - b.box), abc: (a, b) => a.he.localeCompare(b.he, "he") };
+  return L.sort(sorters[filt.sort]);
+}
+function mineHTML() {
+  const L = mineList(), all = Object.keys(S.words).length;
+  const tagCls = { "שולט": "good", "קשה": "warn" };
+  return `<section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>המילים שלי</h2><span class="counter">${L.length} מתוך ${all}</span></div>
+    <div class="filters">
+      <input id="fq" type="search" placeholder="חיפוש בעברית, ביפנית או ברומאג'י" value="${esc(filt.q)}">
+      <select id="fs" aria-label="נושא"><option value="">כל הנושאים</option>${scnIds().map(id => `<option value="${id}" ${filt.scn === id ? "selected" : ""}>${esc(SCN[id].title)}</option>`).join("")}</select>
+      <select id="fst" aria-label="מצב"><option value="">כל המצבים</option>${["חדשה", "בתרגול", "קשה", "שולט"].map(s => `<option ${filt.st === s ? "selected" : ""}>${s}</option>`).join("")}</select>
+      <select id="fso" aria-label="מיון" style="grid-column:1/-1">${[["new", "מיון: נוספו לאחרונה"], ["hard", "מיון: הקשות קודם"], ["abc", "מיון: לפי א-ב"]].map(([k, l]) => `<option value="${k}" ${filt.sort === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+    </div>
+    ${L.length ? `<button class="btn primary" id="practice">תרגל רק את אלה (${L.length})</button>` : ""}
+    <div class="wl">${L.map(e => { const s = status(e); return `<div class="w"><div class="j" lang="ja">${jaHTML(e, S.settings.furi)}</div><div class="m">${esc(e.he)} <span class="tag ${tagCls[s] || ""}">${s}</span>${e.example ? ' <span class="tag">דוגמה</span>' : ""}</div><div class="r">${esc(e.ro)} · ${esc(heTr(e.ro))} · ${esc(SCN[e.scn]?.title || "")}</div><div class="act"><button class="play" data-say='${esc(JSON.stringify(e))}' aria-label="השמעה">${PLAY_ICON}</button></div></div>`; }).join("") || `<p class="muted" style="margin:0">אין מילים שמתאימות לסינון.</p>`}</div>
+  </section>`;
+}
+function bindMine(v) {
+  const re = () => { const pos = $("#fq").selectionStart; render(); const f = $("#fq"); f.focus(); try { f.setSelectionRange(pos, pos); } catch {} };
+  v.querySelector("#fq").oninput = e => { filt.q = e.target.value; re(); };
+  v.querySelector("#fs").onchange = e => { filt.scn = e.target.value; render(); };
+  v.querySelector("#fst").onchange = e => { filt.st = e.target.value; render(); };
+  v.querySelector("#fso").onchange = e => { filt.sort = e.target.value; render(); };
+  v.querySelectorAll("[data-say]").forEach(b => b.onclick = () => play([JSON.parse(b.dataset.say)], { speed: S.settings.speed }));
+  const p = v.querySelector("#practice"); if (p) p.onclick = () => { cardsState = { deck: mineList().map(e => ({ w: e, scn: e.scn })), idx: 0, flip: false, title: "המילים שבחרתי", tip: pick(ETIQ), fixed: true }; go("cards"); };
+}
+
+/* ---------- TRIP MODE ---------- */
+// "kana" is what the speech engine reads; particles は/へ are written わ/え so they are pronounced right
+const ALG = [
+  { id: "peanut", he: "בוטנים", ja: "ピーナッツ", kana: "ピーナッツ" },
+  { id: "nuts", he: "אגוזים", ja: "ナッツ類", kana: "ナッツるい" },
+  { id: "shell", he: "שרימפס וסרטנים", ja: "えび・かに", kana: "えび、かに" },
+  { id: "fish", he: "דגים", ja: "魚", kana: "さかな" },
+  { id: "egg", he: "ביצים", ja: "卵", kana: "たまご" },
+  { id: "milk", he: "מוצרי חלב", ja: "乳製品", kana: "にゅうせいひん" },
+  { id: "wheat", he: "חיטה", ja: "小麦", kana: "こむぎ" },
+  { id: "soba", he: "כוסמת (סובה)", ja: "そば", kana: "そば" },
+  { id: "sesame", he: "שומשום", ja: "ごま", kana: "ごま" }
+];
+const FIXED = [
+  { he: "אני לא מדבר יפנית. אתה מדבר אנגלית?", ja: "日本語が話せません。\n英語は話せますか？", kana: "にほんごがはなせません。えいごわはなせますか？" },
+  { he: "תזמינו אמבולנס, בבקשה!", ja: "救急車を呼んでください！", kana: "きゅうきゅうしゃをよんでください！" },
+  { he: "תזמינו משטרה, בבקשה!", ja: "警察を呼んでください！", kana: "けいさつをよんでください！" },
+  { he: "הלכתי לאיבוד. עזרו לי, בבקשה.", ja: "道に迷いました。\n助けてください。", kana: "みちにまよいました。たすけてください。" },
+  { he: "איפה השירותים?", ja: "トイレはどこですか？", kana: "トイレわどこですか？" },
+  { he: "כמה זה עולה? כתבו לי כאן, בבקשה.", ja: "いくらですか？\nここに書いてください。", kana: "いくらですか？ここにかいてください。" },
+  { he: "אפשר לשלם בכרטיס אשראי?", ja: "カードで払えますか？", kana: "カードではらえますか？" }
+];
+function hotelCard() {
+  const t = S.trip;
+  return { he: `קחו אותי למלון הזה, בבקשה.${t.hotel || t.addr ? "" : " (כתבו את שם המלון והכתובת למטה)"}`, ja: `このホテルまでお願いします。${t.hotel ? "\n" + t.hotel : ""}${t.addr ? "\n" + t.addr : ""}`, kana: "このホテルまでおねがいします。", small: true };
+}
+function allergyCard() {
+  const t = S.trip, sel = ALG.filter(a => t.alg.includes(a.id));
+  let ja = "", kana = "", he = [];
+  if (sel.length) {
+    const j = sel.map(a => a.ja).join("、"), k = sel.map(a => a.kana).join("、");
+    ja += `私は${j}のアレルギーがあります。\n${j}が入っていない料理をお願いします。`;
+    kana += `わたしわ${k}のアレルギーがあります。${k}がはいっていないりょうりをおねがいします。`;
+    he.push(`יש לי אלרגיה ל${sel.map(a => a.he).join(", ")}. אבקש מנה בלי ${sel.map(a => a.he).join(", ")}.`);
+  }
+  if (t.pork) { ja += (ja ? "\n" : "") + "豚肉は食べられません。"; kana += "ぶたにくわたべられません。"; he.push("אני לא אוכל בשר חזיר."); }
+  if (t.veg) { ja += (ja ? "\n" : "") + "私はベジタリアンです。\n肉と魚は食べられません。"; kana += "わたしわベジタリアンです。にくとさかなわたべられません。"; he.push("אני צמחוני. אני לא אוכל בשר ודגים."); }
+  return { ja, kana, he: he.join(" ") };
+}
+function phrases() {
+  const out = [], seen = new Set();
+  for (const id of learnIds()) SCN[id].convs.forEach((c, ci) => c.dialog.forEach(s => {
+    if (s.who !== "user") return;
+    for (const o of s.opts) if (o.ok) { const k = jaStr(o.toks); if (!seen.has(k)) { seen.add(k); out.push({ toks: o.toks, tr: o.tr, scn: id, conv: ci }); } }
+  }));
+  return out;
+}
+function showCard(card) {
+  const root = $("#sheetRoot");
+  root.innerHTML = `<div class="showov" dir="rtl" role="dialog" aria-modal="true" aria-label="כרטיס להראות">
+    <div class="row" style="justify-content:space-between"><span class="tag">הראה למקומי</span><button class="icon-btn" data-close>סגירה</button></div>
+    <div class="bigja${card.small ? " sm" : ""}" lang="ja">${card.ja.split("\n").map(l => `<div>${esc(l)}</div>`).join("")}</div>
+    <div class="he">${esc(card.he)}</div>
+    <div class="row"><button class="btn primary" id="shSay">השמעה ביפנית</button><button class="btn soft" id="shSlow">השמעה איטית</button></div>
+  </div>`;
+  const t = [{ ja: card.ja.replace(/\n/g, ""), kana: card.kana || "", ro: "", he: "" }];
+  root.querySelector("[data-close]").onclick = () => { stopSpeech(); root.innerHTML = ""; };
+  root.querySelector("#shSay").onclick = () => play(t, { speed: 2 });
+  root.querySelector("#shSlow").onclick = () => play(t, { speed: 1 });
+}
+function tripHTML() {
+  const t = S.trip, on = online(), list = phrases().filter(p => !pb.scn || p.scn === pb.scn);
+  const hay = p => [jaStr(p.toks), p.toks.map(x => x.kana).join(""), p.toks.map(x => x.ro).join(" "), p.tr, heTr(p.toks.map(x => x.ro).join(" "))].join(" ").toLowerCase();
+  return `<section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>מצב טיול</h2><span class="tag ${on ? "good" : "warn"}">${on ? "מחובר לאינטרנט" : "בלי אינטרנט"}</span></div>
+    <p class="muted small" style="margin:0">כל השיחות, ספר הביטויים והכרטיסים שמורים בתוך הדף, ועובדים גם בלי אינטרנט אחרי שהדף נטען. השארו עם הדף פתוח לפני שאתם יוצאים לאזור בלי קליטה. רק שיחה חופשית ויצירת נושא משלך צריכות חיבור.</p>
+  </section>
+  <section class="panel">
+    <h2>הראה למקומי</h2>
+    <p class="note" style="margin:0">כרטיס בטקסט גדול להראות לנהג, למלצר או לשוטר, עם השמעה ביפנית.</p>
+    <div class="field"><label for="tHotel">שם המלון</label><input id="tHotel" value="${esc(t.hotel)}" placeholder="למשל: Hotel Sakura Shinjuku" autocomplete="off"></div>
+    <div class="field"><label for="tAddr">כתובת המלון (העתיקו מאתר ההזמנה, עדיף ביפנית)</label><input id="tAddr" value="${esc(t.addr)}" placeholder="למשל: 東京都新宿区西新宿1-2-3" autocomplete="off"></div>
+    <button class="btn primary" data-show="hotel">הצג כרטיס מלון</button>
+    <div class="field"><span>האלרגיות והמגבלות שלי</span>
+      <div class="alg">${ALG.map(a => `<label><input type="checkbox" data-alg="${a.id}" ${t.alg.includes(a.id) ? "checked" : ""}>${esc(a.he)}</label>`).join("")}
+      <label><input type="checkbox" id="tPork" ${t.pork ? "checked" : ""}>בלי חזיר</label><label><input type="checkbox" id="tVeg" ${t.veg ? "checked" : ""}>צמחוני</label></div></div>
+    <button class="btn primary" data-show="alg" ${t.alg.length || t.pork || t.veg ? "" : "disabled"}>הצג כרטיס אלרגיה</button>
+    <div class="small muted">משפטים מוכנים:</div>
+    <div class="showgrid">${FIXED.map((f, i) => `<button data-show="${i}"><span>${esc(f.he)}</span><span class="j" lang="ja">${esc(f.ja.replace(/\n/g, ""))}</span></button>`).join("")}</div>
+  </section>
+  <section class="panel">
+    <div class="row" style="justify-content:space-between"><h2>ספר ביטויים מהיר</h2><span class="counter" id="pbCount">${list.length}</span></div>
+    <div class="filters">
+      <input id="pbq" type="search" placeholder="חיפוש: דרכון, אלרגיה, いくら, kippu..." value="${esc(pb.q)}">
+      <select id="pbs" aria-label="נושא" style="grid-column:1/-1"><option value="">כל הנושאים</option>${learnIds().map(id => `<option value="${id}" ${pb.scn === id ? "selected" : ""}>${esc(SCN[id].title)}</option>`).join("")}</select>
+    </div>
+    <div class="pb" id="pbList">${list.map((p, i) => `<div class="p" data-h="${esc(hay(p))}"><div class="j" lang="ja" id="pb${i}">${esc(jaStr(p.toks))}</div><div class="r">${esc(p.toks.map(x => x.ro).join(" "))}</div><div class="m">${esc(p.tr)}</div><div class="h">${esc(heTr(p.toks.map(x => x.ro).join(" ")))} · ${esc(SCN[p.scn].title)}</div><div class="act"><button class="play" data-pp="${i}" aria-label="השמעה">${PLAY_ICON}</button><button class="btn soft mini-btn" data-ps="${i}">הצג</button></div></div>`).join("")}</div>
+    <p class="muted" id="pbNone" style="margin:0" hidden>לא נמצא ביטוי. נסו מילה אחרת.</p>
+  </section>`;
+}
+function bindTrip(v) {
+  const t = S.trip, list = phrases().filter(p => !pb.scn || p.scn === pb.scn);
+  v.querySelector("#tHotel").oninput = e => { t.hotel = e.target.value; save(); };
+  v.querySelector("#tAddr").oninput = e => { t.addr = e.target.value; save(); };
+  v.querySelectorAll("[data-alg]").forEach(b => b.onchange = () => { const id = b.dataset.alg; t.alg = b.checked ? [...new Set([...t.alg, id])] : t.alg.filter(x => x !== id); save(); render(); });
+  v.querySelector("#tPork").onchange = e => { t.pork = e.target.checked; save(); render(); };
+  v.querySelector("#tVeg").onchange = e => { t.veg = e.target.checked; save(); render(); };
+  v.querySelectorAll("[data-show]").forEach(b => b.onclick = () => { const k = b.dataset.show; showCard(k === "hotel" ? hotelCard() : k === "alg" ? allergyCard() : FIXED[+k]); });
+  const filter = () => {
+    const q = pb.q.trim().toLowerCase(); let n = 0;
+    v.querySelectorAll("#pbList .p").forEach(el => { const ok = !q || el.dataset.h.includes(q); el.hidden = !ok; if (ok) n++; });
+    v.querySelector("#pbCount").textContent = n; v.querySelector("#pbNone").hidden = n > 0;
+  };
+  v.querySelector("#pbq").oninput = e => { pb.q = e.target.value; filter(); };
+  v.querySelector("#pbs").onchange = e => { pb.scn = e.target.value; render(); };
+  v.querySelectorAll("[data-pp]").forEach(b => b.onclick = () => play(list[+b.dataset.pp].toks, { el: $("#pb" + b.dataset.pp) }));
+  v.querySelectorAll("[data-ps]").forEach(b => b.onclick = () => { const p = list[+b.dataset.ps]; showCard({ ja: jaStr(p.toks), kana: p.toks.map(spoken).join(""), he: p.tr }); });
+  filter();
+}
+
+/* ---------- sheets ---------- */
+function sheet(html, onBind) {
+  const root = $("#sheetRoot");
+  root.innerHTML = `<div class="scrim" dir="rtl"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  const close = () => { root.innerHTML = ""; };
+  root.querySelector(".scrim").onclick = e => { if (e.target.classList.contains("scrim")) close(); };
+  root.querySelectorAll("[data-close]").forEach(b => b.onclick = close);
+  onBind && onBind(root, close);
+}
+function openWord(w, scnId) {
+  const clean = { ...w, ja: w.ja.replace(/[。、？！…]/g, ""), ro: w.ro.replace(/[.,?!…]/g, "") };
+  const have = !!S.words[clean.ja];
+  sheet(`<div class="head"><h2>פירוש המילה</h2><button class="icon-btn" data-close>סגירה</button></div>
+    <div class="wordsheet" style="display:flex;flex-direction:column;gap:12px">
+      <div class="big" lang="ja">${jaHTML(w, true)}</div>
+      <dl><dt>פירוש</dt><dd>${esc(w.he || "—")}</dd><dt>רומאג'י</dt><dd style="direction:ltr;text-align:right">${esc(w.ro)}</dd><dt>תעתיק עברי</dt><dd>${esc(heTr(w.ro))}</dd>${w.kana ? `<dt>קריאה</dt><dd lang="ja">${esc(w.kana)}</dd>` : ""}</dl>
+      <div class="row"><button class="btn soft" id="wSay">השמעה</button><button class="btn soft" id="wSlow">השמעה איטית</button><button class="btn primary" id="wAdd" ${have ? "disabled" : ""}>${have ? "כבר ברשימה שלך" : "הוסף ל\"המילים שלי\""}</button></div>
+    </div>`, (root, close) => {
+    root.querySelector("#wSay").onclick = () => play([w], { speed: 2 });
+    root.querySelector("#wSlow").onclick = () => play([w], { speed: 0 });
+    root.querySelector("#wAdd").onclick = () => { addWord(clean, scnId); touch(scnId, clean); close(); };
+  });
+}
+$("#openSettings").onclick = () => {
+  const st = S.settings;
+  const sw = (k, l) => `<label class="sw"><span>${l}</span><input type="checkbox" id="set-${k}" ${st[k] ? "checked" : ""}></label>`;
+  sheet(`<div class="head"><h2>הגדרות לימוד</h2><button class="icon-btn" data-close>סגירה</button></div>
+    <div><h2 style="font-size:1rem">כתוביות</h2>
+    ${sw("ja", "כתב יפני")}${sw("furi", "קריאה מעל הקאנג'י (פוריגאנה)")}${sw("ro", "תעתיק לטיני (רומאג'י)")}${sw("hetr", "תעתיק בעברית")}${sw("tr", "תרגום לעברית תמיד")}</div>
+    <div class="field"><h2 style="font-size:1rem">מהירות דיבור</h2><div class="seg" role="group">${["איטי", "בינוני", "רגיל"].map((l, i) => `<button data-sp="${i}" aria-pressed="${st.speed === i}">${l}</button>`).join("")}</div><span class="note">איטי משמיע מילה אחרי מילה. רגיל הוא קצב דיבור טבעי.</span></div>
+    <div class="field"><h2 style="font-size:1rem">דמות לשיחה</h2>${sw("avatar", "הצג את הדמות")}<div class="chars">${Object.entries(CHARS).map(([id, c]) => `<button data-ch="${id}" aria-pressed="${st.ch === id}">${avatarSVG(id)}<span>${esc(c.name)}</span><span class="muted">${esc(c.desc)}</span></button>`).join("")}</div></div>`,
+    root => {
+      ["ja", "furi", "ro", "hetr", "tr", "avatar"].forEach(k => root.querySelector("#set-" + k).onchange = e => { st[k] = e.target.checked; save(); render(); });
+      root.querySelectorAll("[data-sp]").forEach(b => b.onclick = () => { st.speed = +b.dataset.sp; save(); root.querySelectorAll("[data-sp]").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); });
+      root.querySelectorAll("[data-ch]").forEach(b => b.onclick = () => { st.ch = b.dataset.ch; save(); root.querySelectorAll("[data-ch]").forEach(x => x.setAttribute("aria-pressed", x === b)); render(); });
+    });
+};
+
+/* ---------- new topic with AI ---------- */
+function openNewTopic() {
+  sheet(`<div class="head"><h2>נושא שיחה משלך</h2><button class="icon-btn" data-close>סגירה</button></div>
+    <p class="muted" style="margin:0">כתבו מצב מהטיול, ו-Claude יכין לו מילים ושיחה ביפנית בסגנון של שאר הנושאים.</p>
+    <form class="field" id="ntForm"><label for="ntIn">נושא</label><input id="ntIn" placeholder="למשל: מספרה, קניית כרטיס לקונצרט, חוף ים" autocomplete="off" required>
+    <div class="row"><button class="btn primary" type="submit" id="ntGo">צור נושא</button><button class="btn" type="button" id="ntStop" hidden>עצור</button></div></form>
+    <div id="ntOut" class="note"></div>`, (root, close) => {
+    let ctl = null;
+    root.querySelector("#ntStop").onclick = () => ctl && ctl.abort();
+    root.querySelector("#ntForm").onsubmit = async e => {
+      e.preventDefault();
+      const topic = root.querySelector("#ntIn").value.trim(); if (!topic) return;
+      const out = root.querySelector("#ntOut"), goB = root.querySelector("#ntGo"), stopB = root.querySelector("#ntStop");
+      const sample = await getSample();
+      if (!sample) { out.textContent = "יצירת נושא דורשת חיבור ל-Claude, והוא לא זמין בתצוגה הזו."; return; }
+      ctl = new AbortController(); goB.disabled = true; stopB.hidden = false; out.textContent = "מכין מילים ושיחה... זה יכול לקחת עד דקה.";
+      try {
+        const data = await sample.json(topicPrompt(topic), { signal: ctl.signal });
+        const sc = normalizeTopic(data);
+        S.custom.push(sc); save(); loadScenarios(); cur = sc.id; resetConv(); cardsState = null; close(); go("talk");
+      } catch (err) {
+        out.textContent = err?.code === "cancelled" ? "הפעולה נעצרה." : (err?.message === "shape" ? "התוכן שהתקבל לא היה שלם. נסו שוב או נסחו את הנושא אחרת." : errText(err));
+      } finally { goB.disabled = false; stopB.hidden = true; }
+    };
+  });
+}
+function topicPrompt(topic) {
+  return `Create a short beginner Japanese lesson for Hebrew-speaking travelers in Japan. Topic (written by the learner, in Hebrew or English): """${topic.slice(0, 200)}"""
+Use polite です/ます Japanese that a traveler really needs. Reply with only one JSON object:
+{"title": "short Hebrew title", "role": "Hebrew name of the Japanese speaker's role, e.g. 'מוכר בחנות'", "tip": "one Hebrew sentence with a real cultural or etiquette tip for this situation",
+ "words": [6 items {"ja": "word as written", "kana": "hiragana reading; REQUIRED whenever ja contains kanji, else empty", "ro": "Hepburn romaji with macrons", "he": "Hebrew meaning"}],
+ "dialog": [steps alternating, starting with npc and ending with npc: 3 npc steps and 2 user steps]}
+npc step: {"who":"npc","tokens":[TOKEN...],"tr":"Hebrew translation"}
+user step: {"who":"user","options":[{"tokens":[TOKEN...],"tr":"Hebrew translation","ok":true}, {"tokens":[...],"tr":"...","ok":false,"why":"one short Hebrew sentence: why it is wrong and what to say, Japanese followed by Hebrew transliteration in parentheses"}, one more wrong option]}
+${TOKEN_RULES} Exactly one ok option per user step; shuffle its position.`;
+}
+function normalizeTopic(d) {
+  const words = (Array.isArray(d?.words) ? d.words : []).map(normTok).filter(t => t.ja && t.ro && t.he).slice(0, 10);
+  const dialog = (Array.isArray(d?.dialog) ? d.dialog : []).map(s => s?.who === "user"
+    ? { who: "user", opts: (Array.isArray(s.options) ? s.options : []).map(o => ({ toks: normToks(o.tokens), tr: String(o.tr || ""), ok: o.ok === true, why: String(o.why || "") })).filter(o => o.toks.length) }
+    : { who: "npc", toks: normToks(s?.tokens), tr: String(s?.tr || "") });
+  const valid = words.length >= 3 && dialog.length >= 3 && dialog[0].who === "npc" &&
+    dialog.every((s, i) => (i % 2 === 0 ? s.who === "npc" && s.toks.length : s.who === "user" && s.opts.length >= 2 && s.opts.filter(o => o.ok).length === 1));
+  if (!valid) throw new Error("shape");
+  const title = String(d.title || "נושא חדש").slice(0, 30), role = String(d.role || "בן שיח").slice(0, 40);
+  return { id: "c" + Date.now(), custom: true, title, role, convs: [{ title, role, tip: String(d.tip || ""), words, dialog }] };
+}
+
+render();
+</script>
